@@ -3,7 +3,7 @@ import Stripe from 'stripe';
 import { db } from '@/lib/db';
 import { subscribers } from '@/drizzle/schema';
 import { eq } from 'drizzle-orm';
-
+export const runtime = 'edge';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2026-01-28.clover', // Using recent version, ensure matches package
     typescript: true,
