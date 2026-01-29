@@ -13,6 +13,20 @@ export default function Home() {
     { label: "Junk Sprd", value: "Loading...", risk: "low" },
   ]);
 
+  const [currency, setCurrency] = useState("£"); // Default to £ as per request context or fallback
+
+  useEffect(() => {
+    // Simple locale detection for currency
+    const userLocale = navigator.language;
+    if (userLocale.includes('US')) {
+      setCurrency('$');
+    } else if (['de', 'fr', 'it', 'es', 'nl', 'ie'].some(l => userLocale.includes(l))) {
+      setCurrency('€');
+    } else {
+      setCurrency('£'); // Defaulting to £ for now given the prompt used £ first
+    }
+  }, []);
+
   useEffect(() => {
     async function fetchMetrics() {
       try {
@@ -88,21 +102,20 @@ export default function Home() {
       </div>
 
       {/* Pricing / Features Cards */}
-      <section id="pricing" className="w-full max-w-6xl px-6 py-24 z-10">
-        <div className="grid md:grid-cols-2 gap-8 items-start">
+      <section id="pricing" className="w-full max-w-7xl px-6 py-24 z-10">
+        <div className="grid xl:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-8 items-start">
 
           {/* Basic Card */}
           <div className="glass-panel p-1 rounded-2xl bg-zinc-900/50 border border-zinc-800 hover:border-zinc-700 transition duration-300">
             <div className="bg-[#0c0c0c] rounded-xl p-8 h-full flex flex-col">
               <div className="mb-6">
                 <div className="text-2xl font-bold text-white mb-2">Basic</div>
-                <div className="text-4xl font-bold text-yellow-500">$9 <span className="text-sm text-gray-500 font-normal">/ month</span></div>
+                <div className="text-4xl font-bold text-yellow-500">{currency}1 <span className="text-sm text-gray-500 font-normal">/ month</span></div>
               </div>
 
               <div className="w-full h-32 bg-zinc-900 rounded-lg mb-6 border border-zinc-800 flex items-center justify-center relative overflow-hidden group">
                 <div className="absolute inset-0 bg-gradient-to-tr from-transparent to-white/5"></div>
-                <span className="text-zinc-700 text-sm font-mono">Market Snapshot Preview</span>
-                {/* Abstract chart line */}
+                <span className="text-zinc-700 text-sm font-mono">Market Snapshot</span>
                 <svg className="absolute bottom-0 left-0 right-0 h-16 w-full text-zinc-700 opacity-50" viewBox="0 0 100 20" preserveAspectRatio="none">
                   <path d="M0 20 L0 15 L20 18 L40 10 L60 14 L80 5 L100 12 L100 20 Z" fill="currentColor" />
                 </svg>
@@ -118,15 +131,15 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Pro Card */}
+          {/* Pro Card (Recommended) */}
           <div className="relative group">
             <div className="absolute -inset-0.5 bg-gradient-to-b from-yellow-500 to-yellow-700 rounded-2xl opacity-75 blur-sm group-hover:opacity-100 transition duration-500"></div>
             <div className="absolute top-0 right-0 bg-yellow-500 text-black text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg z-20">RECOMMENDED</div>
 
             <div className="relative bg-[#0c0c0c] rounded-2xl p-8 h-full flex flex-col border border-yellow-500/20">
               <div className="mb-6 relative z-10">
-                <div className="text-2xl font-bold text-white mb-2 pr-28">Pro Analyst</div>
-                <div className="text-4xl font-bold text-yellow-400">$29 <span className="text-sm text-zinc-500 font-normal">/ month</span></div>
+                <div className="text-2xl font-bold text-white mb-2 pr-28">Pro</div>
+                <div className="text-4xl font-bold text-yellow-400">{currency}5 <span className="text-sm text-zinc-500 font-normal">/ month</span></div>
               </div>
 
               <div className="grid grid-cols-2 gap-2 mb-6">
@@ -145,11 +158,35 @@ export default function Home() {
               <ul className="space-y-4 mb-8 text-gray-300 text-sm flex-1">
                 <li className="flex gap-3 items-center"><span className="text-yellow-400">✓</span> All Market Symbols</li>
                 <li className="flex gap-3 items-center"><span className="text-yellow-400">✓</span> Best Daily Predictions</li>
-                <li className="flex gap-3 items-center"><span className="text-yellow-400">✓</span> Deep Learning "Buy/Sell" Signals</li>
+                <li className="flex gap-3 items-center"><span className="text-yellow-400">✓</span> Buy/Sell Signals</li>
                 <li className="flex gap-3 items-center"><span className="text-yellow-400">✓</span> Priority Alerts</li>
               </ul>
 
               <button className="w-full py-3 rounded-lg bg-yellow-500 hover:bg-yellow-400 transition text-black font-bold shadow-[0_0_15px_rgba(234,179,8,0.3)]">Select Pro</button>
+            </div>
+          </div>
+
+          {/* Expert Card */}
+          <div className="glass-panel p-1 rounded-2xl bg-zinc-900/50 border border-zinc-800 hover:border-zinc-700 transition duration-300">
+            <div className="bg-[#0c0c0c] rounded-xl p-8 h-full flex flex-col">
+              <div className="mb-6">
+                <div className="text-2xl font-bold text-white mb-2">Expert</div>
+                <div className="text-4xl font-bold text-yellow-500">{currency}10 <span className="text-sm text-gray-500 font-normal">/ month</span></div>
+              </div>
+
+              <div className="w-full h-32 bg-zinc-900 rounded-lg mb-6 border border-zinc-800 flex items-center justify-center relative overflow-hidden group">
+                <div className="absolute inset-0 bg-dotted-pattern opacity-20"></div>
+                <span className="text-zinc-500 text-sm font-mono z-10">Custom Metrics</span>
+              </div>
+
+              <ul className="space-y-4 mb-8 text-zinc-400 text-sm flex-1">
+                <li className="flex gap-3 items-center"><span className="text-yellow-500">✓</span> All Pro Features</li>
+                <li className="flex gap-3 items-center"><span className="text-yellow-500">✓</span> Pick Custom Metrics</li>
+                <li className="flex gap-3 items-center"><span className="text-yellow-500">✓</span> Advanced API Access</li>
+                <li className="flex gap-3 items-center"><span className="text-yellow-500">✓</span> 1-on-1 Support</li>
+              </ul>
+
+              <button className="w-full py-3 rounded-lg border border-zinc-700 hover:bg-zinc-800 transition text-white font-medium">Select Expert</button>
             </div>
           </div>
 
