@@ -14,5 +14,9 @@
     "@cloudflare/workers-types": "^4.20260129.0",
     "typescript": "^5.9.3",
     "wrangler": "^4.61.1"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.0.2",
+    "drizzle-orm": "^0.45.1"
   }
 }

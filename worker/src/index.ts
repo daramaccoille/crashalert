@@ -1,6 +1,8 @@
 import { fetchMarketData } from './market';
 import { generateTrendChartUrl } from './utils/charts';
 import { sendEmail } from './utils/email';
+import { getDb } from './db';
+import { marketMetrics } from './schema';
 
 export interface Env {
     DATABASE_URL: string;
@@ -17,11 +19,23 @@ export default {
             try {
                 const data = await fetchMarketData(env);
 
+                // Save to DB
+                const db = getDb(env.DATABASE_URL);
+                await db.insert(marketMetrics).values({
+                    vix: data.vix.toFixed(2),
+                    yieldSpread: data.yield_curve.toFixed(2),
+                    sp500pe: data.sp500_pe.toFixed(2),
+                    liquidity: data.liquidity.toFixed(2),
+                    junkBondSpread: Math.round(data.junk_bond_spread),
+                    marketMode: data.market_mode,
+                    rawJson: data
+                });
+
                 // Test Email Send
                 await sendEmail(
-                    "dara@crashalert.online ", // Keeping this hardcoded for your test
+                    "dara@crashalert.online",
                     "CrashAlert Update Test",
-                    "<p>Market data fetched successfully.</p><pre>" + JSON.stringify(data, null, 2) + "</pre>",
+                    "<p>Market data fetched and saved successfully.</p><pre>" + JSON.stringify(data, null, 2) + "</pre>",
                     env
                 );
 
@@ -40,22 +54,24 @@ export default {
             const data = await fetchMarketData(env);
             console.log("Market Data Fetched:", JSON.stringify(data));
 
-            // Example: Generate VIX Chart for Enterprise users
-            // Mock History: 
-            const mockHistory = [14, 15, 14.5, 16, 15.8, 16.2, 16.5];
-            const prediction = 17.2;
-            const upper = 18.5;
-            const lower = 15.0;
-
-            const chartUrl = generateTrendChartUrl("VIX Trend", mockHistory, prediction, upper, lower);
-            console.log("Generated Chart URL:", chartUrl);
-
             // 1. Save to DB
-            // 2. Determine Emails to send
-            // 3. Send Emails via Resend (injecting chartUrl for Enterprise)
+            const db = getDb(env.DATABASE_URL);
+            await db.insert(marketMetrics).values({
+                vix: data.vix.toFixed(2),
+                yieldSpread: data.yield_curve.toFixed(2),
+                sp500pe: data.sp500_pe.toFixed(2),
+                liquidity: data.liquidity.toFixed(2),
+                junkBondSpread: Math.round(data.junk_bond_spread),
+                marketMode: data.market_mode,
+                rawJson: data
+            });
+
+            // 2. Determine Emails to send (Logic to be expanded)
+            // ExampleChart logic...
 
         } catch (e) {
             console.error("Cron failed:", e);
         }
     },
 };
+
