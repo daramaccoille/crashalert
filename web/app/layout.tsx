@@ -22,6 +22,7 @@ export default function RootLayout({
     <html lang="en" className="scroll-smooth">
       <body
         className={`${outfit.variable} font-sans antialiased bg-[#050505] text-white`}
+        suppressHydrationWarning
       >
         {children}
       </body>

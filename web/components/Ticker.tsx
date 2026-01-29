@@ -7,15 +7,13 @@ interface TickerProps {
 export default function Ticker({ metrics }: TickerProps) {
     return (
         <div className="w-full overflow-hidden bg-black/20 border-y border-white/5 py-3">
-            <div className="flex animate-scroll whitespace-nowrap w-[200%]">
-                {[...metrics, ...metrics, ...metrics].map((m, i) => (
-                    <div key={i} className="mx-6 flex items-center space-x-2 text-sm font-mono">
-                        <span className="text-gray-400">{m.label}:</span>
-                        <span className={m.risk === 'high' ? 'text-risk-high animate-pulse' : m.risk === 'mod' ? 'text-risk-mod' : 'text-risk-low'}>
+            <div className="flex animate-scroll whitespace-nowrap w-[200%] gap-16 px-4">
+                {[...metrics, ...metrics, ...metrics, ...metrics].map((m, i) => (
+                    <div key={i} className="flex items-center space-x-3 text-sm font-mono tracking-wider">
+                        <span className="text-zinc-500 font-semibold">{m.label}</span>
+                        <span className={`font-bold ${m.risk === 'high' ? 'text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]' : m.risk === 'mod' ? 'text-amber-500' : 'text-emerald-500'}`}>
                             {m.value}
                         </span>
-                        <span className={`w-2 h-2 rounded-full ${m.risk === 'high' ? 'bg-risk-high' : m.risk === 'mod' ? 'bg-risk-mod' : 'bg-risk-low'
-                            }`}></span>
                     </div>
                 ))}
             </div>

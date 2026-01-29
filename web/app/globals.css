@@ -1,6 +1,27 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-glass: rgba(255, 255, 255, 0.05);
+  --color-glass-border: rgba(255, 215, 0, 0.15);
+  --color-risk-high: #EF4444;
+  --color-risk-mod: #F59E0B;
+  --color-risk-low: #10B981;
+  --color-accent: #FFD700;
+  --color-gold: #D4AF37;
+  --color-gold-light: #FCD34D;
+
+  --animate-scroll: scroll 20s linear infinite;
+
+  @keyframes scroll {
+    0% {
+      transform: translateX(0);
+    }
+
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+}
 
 :root {
   --background: #050505;

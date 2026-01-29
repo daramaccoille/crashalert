@@ -72,10 +72,10 @@ export default function Home() {
           <input
             type="email"
             placeholder="email@example.com"
-            className="w-full bg-[#111] border border-white/10 rounded-lg px-6 py-4 text-white placeholder:text-gray-600 focus:outline-none focus:border-yellow-500/50 transition focus:ring-1 focus:ring-yellow-500/20"
+            className="w-full bg-white/5 border border-white/20 rounded-lg px-6 py-4 text-white placeholder:text-zinc-600 focus:outline-none focus:border-yellow-500/50 transition focus:ring-1 focus:ring-yellow-500/20 backdrop-blur-sm"
           />
-          <p className="text-xs text-gray-500 text-right w-full -mt-2">Enter your email to subscribe.</p>
-          <button className="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-8 py-4 rounded-lg transition shadow-[0_0_20px_rgba(234,179,8,0.2)]">
+          <p className="text-xs text-zinc-500 text-right w-full -mt-2">Enter your email to subscribe.</p>
+          <button className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black font-bold px-8 py-4 rounded-lg transition shadow-[0_0_25px_rgba(234,179,8,0.3)] border border-yellow-400/20">
             Subscribe
           </button>
         </form>
@@ -124,9 +124,9 @@ export default function Home() {
             <div className="absolute top-0 right-0 bg-yellow-500 text-black text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg z-20">RECOMMENDED</div>
 
             <div className="relative bg-[#0c0c0c] rounded-2xl p-8 h-full flex flex-col border border-yellow-500/20">
-              <div className="mb-6">
-                <div className="text-2xl font-bold text-white mb-2">Pro Analyst</div>
-                <div className="text-4xl font-bold text-yellow-400">$29 <span className="text-sm text-gray-500 font-normal">/ month</span></div>
+              <div className="mb-6 relative z-10">
+                <div className="text-2xl font-bold text-white mb-2 pr-28">Pro Analyst</div>
+                <div className="text-4xl font-bold text-yellow-400">$29 <span className="text-sm text-zinc-500 font-normal">/ month</span></div>
               </div>
 
               <div className="grid grid-cols-2 gap-2 mb-6">
