@@ -1,0 +1,13 @@
+name = "crash-alert-worker"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+[vars]
+# Environment variables for the worker
+# STRIPE_KEY = "..."
+# RESEND_KEY = "..."
+# GEMINI_KEY = "..."
+# DATABASE_URL = "..."
+
+[triggers]
+crons = ["0 21 * * 1-5"] # Run at 9 PM UTC (Market Close approx) Mon-Fri
