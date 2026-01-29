@@ -19,7 +19,7 @@ export default {
 
                 // Test Email Send
                 await sendEmail(
-                    "metaldetectorsonline1@gmail.com ", // Keeping this hardcoded for your test
+                    "dara@crashalert.online ", // Keeping this hardcoded for your test
                     "CrashAlert Update Test",
                     "<p>Market data fetched successfully.</p><pre>" + JSON.stringify(data, null, 2) + "</pre>",
                     env
