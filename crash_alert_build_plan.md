@@ -54,9 +54,9 @@ export const marketMetrics = pgTable('market_metrics', {
 
 ## 4. Subscription Tiers & Features
 
-| Feature | Basic Plan | Pro Plan | Enterprise Plan |
+| Feature | Basic Plan | Pro Plan | Advanced Plan |
 | :--- | :--- | :--- | :--- |
-| **Price** | Low (e.g. $9/mo) | Mid (e.g. $29/mo) | High (e.g. $99/mo) |
+| **Price** | Low (e.g. £1/mo) | Mid (e.g. £5/mo) | High (e.g. £10/mo) |
 | **Email Type** | "Check Your Positions" | Detailed Risk Metrics | Custom + Prediction |
 | **Content** | Simple Red/Green Signal | Full Dashboard of 8+ Indicators | User-Selected Indicators (Max 8) |
 | **AI** | None | Market Summary | Deep Dive + Trend Prediction |
@@ -98,7 +98,7 @@ The Enterprise email must contain a **Trend Chart**.
 2. **Prepare Content**:
     - *Basic*: "Market Risk is [HIGH/LOW]. Red Flags: [2/10]."
     - *Pro*: Full table of all metrics with current values and risk flags. AI Summary text.
-    - *Enterprise*:
+    - *Advanced*:
         - Fetch `selectedAlerts` for the user.
         - Generate custom trend chart for their *primary* selected metric (or composite risk score).
         - AI Prediction text: "VIX predicted to spike to 22 supported by rising yield spread."

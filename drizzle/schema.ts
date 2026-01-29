@@ -3,7 +3,7 @@ import { pgTable, uuid, text, boolean, jsonb, timestamp, integer, decimal } from
 export const subscribers = pgTable('subscribers', {
     id: uuid('id').defaultRandom().primaryKey(),
     email: text('email').unique().notNull(),
-    // plan: basic (free/cheap), pro (metrics), enterprise (custom)
+    // plan: basic (free/cheap), pro (metrics), advanced (custom)
     plan: text('plan').default('basic'),
     stripeId: text('stripe_id'),
     active: boolean('active').default(false),

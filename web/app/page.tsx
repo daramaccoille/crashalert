@@ -145,9 +145,9 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Enterprise */}
+          {/* Advanced */}
           <div className="glass-panel p-8 rounded-3xl border-white/5 bg-white/[0.02] flex flex-col h-min hover:bg-white/[0.04] transition">
-            <h3 className="text-lg font-medium text-gray-300">Enterprise</h3>
+            <h3 className="text-lg font-medium text-gray-300">Advanced</h3>
             <div className="text-4xl font-bold text-white mt-4 mb-2">$99<span className="text-sm font-normal text-gray-500">/mo</span></div>
             <p className="text-xs text-gray-500 mb-8">For serious investors.</p>
 

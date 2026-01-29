@@ -1,8 +1,37 @@
-node_modules
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Testing
+coverage/
+
+# Next.js
+.next/
+out/
+build/
+dist/
+
+# Environment Variables (Keep these secret!)
 .env
+.env.project
+.env.check
 .env.local
-.next
-dist
-.wrangler
+.env.*.local
+.env.production
+.env.development
+.env.test
+
+# Cloudflare
+.wrangler/
+.dev.vars
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# System Files
 .DS_Store
-*.log
+Thumbs.db

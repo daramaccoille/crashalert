@@ -3,12 +3,12 @@ import { pgTable, uuid, text, boolean, jsonb, timestamp, integer, decimal } from
 export const subscribers = pgTable('subscribers', {
     id: uuid('id').defaultRandom().primaryKey(),
     email: text('email').unique().notNull(),
-    // plan: basic (free/cheap), pro (metrics), enterprise (custom)
+    // plan: basic (free/cheap), pro (metrics), advanced (custom)
     plan: text('plan').default('basic'),
     stripeId: text('stripe_id'),
     active: boolean('active').default(false),
     createdAt: timestamp('created_at').defaultNow(),
-    // Enterprise only: Array of selected alert IDs (e.g. ['vix', 'liquidity'])
+    // Advanced only: Array of selected alert IDs (e.g. ['vix', 'liquidity'])
     selectedAlerts: jsonb('selected_alerts').$type<string[]>(),
 });
 
@@ -57,6 +57,6 @@ export const marketMetrics = pgTable('market_metrics', {
 export const alertHistory = pgTable('alert_history', {
     id: uuid('id').defaultRandom().primaryKey(),
     sentAt: timestamp('sent_at').defaultNow(),
-    type: text('type').notNull(), // 'daily_digest', 'intraday_crash', 'enterprise_custom'
+    type: text('type').notNull(), // 'daily_digest', 'intraday_crash', 'advanced_custom'
     recipientCount: integer('recipient_count'),
 });
