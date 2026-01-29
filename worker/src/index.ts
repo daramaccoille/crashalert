@@ -1,10 +1,11 @@
 import { fetchMarketData } from './market';
 import { generateTrendChartUrl } from './utils/charts';
+import { sendEmail } from './utils/email';
 
 export interface Env {
     DATABASE_URL: string;
     STRIPE_KEY: string;
-    RESEND_KEY: string;
+    BREVO_API_KEY: string;
     GEMINI_KEY: string;
 }
 
@@ -15,8 +16,16 @@ export default {
         if (url.pathname === '/trigger-update') {
             try {
                 const data = await fetchMarketData(env);
-                // TODO: Save data to DB
-                return new Response(JSON.stringify(data, null, 2), { headers: { 'content-type': 'application/json' } });
+
+                // Test Email Send
+                await sendEmail(
+                    "metaldetectorsonline1@gmail.com ", // Keeping this hardcoded for your test
+                    "CrashAlert Update Test",
+                    "<p>Market data fetched successfully.</p><pre>" + JSON.stringify(data, null, 2) + "</pre>",
+                    env
+                );
+
+                return new Response(JSON.stringify({ success: true, data }, null, 2), { headers: { 'content-type': 'application/json' } });
             } catch (e: any) {
                 return new Response(`Error: ${e.message}`, { status: 500 });
             }

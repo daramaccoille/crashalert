@@ -1,4 +1,4 @@
-name = "crash-alert-worker"
+name = "crashalertworker"
 main = "src/index.ts"
 compatibility_date = "2024-01-01"
 
