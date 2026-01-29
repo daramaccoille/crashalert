@@ -10,4 +10,4 @@ compatibility_date = "2024-01-01"
 # DATABASE_URL = "..."
 
 [triggers]
-crons = ["0 21 * * 1-5"] # Run at 9 PM UTC (Market Close approx) Mon-Fri
+crons = ["0 7 * * 1-5"] # Run at 7 AM UTC (Market Close approx) Mon-Fri
