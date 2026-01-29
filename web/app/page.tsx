@@ -5,12 +5,12 @@ import Ticker from "@/components/Ticker";
 import { useEffect, useState } from "react";
 
 export default function Home() {
-  const [metrics, setMetrics] = useState([
-    { label: "VIX", value: "Loading...", risk: "low" as const },
-    { label: "Yield", value: "Loading...", risk: "low" as const },
-    { label: "P/E", value: "Loading...", risk: "low" as const },
-    { label: "Liquidity", value: "Loading...", risk: "low" as const },
-    { label: "Junk Sprd", value: "Loading...", risk: "low" as const },
+  const [metrics, setMetrics] = useState<{ label: string; value: string; risk: 'low' | 'mod' | 'high' }[]>([
+    { label: "VIX", value: "Loading...", risk: "low" },
+    { label: "Yield", value: "Loading...", risk: "low" },
+    { label: "P/E", value: "Loading...", risk: "low" },
+    { label: "Liquidity", value: "Loading...", risk: "low" },
+    { label: "Junk Sprd", value: "Loading...", risk: "low" },
   ]);
 
   useEffect(() => {
