@@ -23,11 +23,15 @@ export default {
                 const db = getDb(env.DATABASE_URL);
                 await db.insert(marketMetrics).values({
                     vix: data.vix.toFixed(2),
-                    yieldSpread: data.yield_curve.toFixed(2),
-                    sp500pe: data.sp500_pe.toFixed(2),
+                    yieldSpread: data.yieldSpread.toFixed(2),
+                    sp500pe: data.sp500pe.toFixed(2),
                     liquidity: data.liquidity.toFixed(2),
-                    junkBondSpread: Math.round(data.junk_bond_spread),
-                    marketMode: data.market_mode,
+                    junkBondSpread: Math.round(data.junkBondSpread),
+                    marginDebt: data.marginDebt.toFixed(2),
+                    insiderActivity: data.insiderActivity.toFixed(2),
+                    cfnai: data.cfnai.toFixed(2),
+                    oneMonthAhead: data.oneMonthAhead.toFixed(2),
+                    marketMode: data.marketMode,
                     rawJson: data
                 });
 
@@ -58,11 +62,15 @@ export default {
             const db = getDb(env.DATABASE_URL);
             await db.insert(marketMetrics).values({
                 vix: data.vix.toFixed(2),
-                yieldSpread: data.yield_curve.toFixed(2),
-                sp500pe: data.sp500_pe.toFixed(2),
+                yieldSpread: data.yieldSpread.toFixed(2),
+                sp500pe: data.sp500pe.toFixed(2),
                 liquidity: data.liquidity.toFixed(2),
-                junkBondSpread: Math.round(data.junk_bond_spread),
-                marketMode: data.market_mode,
+                junkBondSpread: Math.round(data.junkBondSpread),
+                marginDebt: data.marginDebt.toFixed(2),
+                insiderActivity: data.insiderActivity.toFixed(2),
+                cfnai: data.cfnai.toFixed(2),
+                oneMonthAhead: data.oneMonthAhead.toFixed(2),
+                marketMode: data.marketMode,
                 rawJson: data
             });
 

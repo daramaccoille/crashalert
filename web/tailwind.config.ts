@@ -33,7 +33,10 @@ const config: Config = {
                     '0%': { transform: 'translateX(0)' },
                     '100%': { transform: 'translateX(-50%)' },
                 }
-            }
+            },
+            fontFamily: {
+                sans: ['var(--font-outfit)', 'sans-serif'],
+            },
         },
     },
     plugins: [],
