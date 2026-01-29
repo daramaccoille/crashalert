@@ -11,45 +11,27 @@ export default function Home() {
   ];
 
   return (
-    <main className="min-h-screen relative flex flex-col items-center overflow-hidden bg-[#030712] text-white selection:bg-indigo-500/30">
+    <main className="min-h-screen relative flex flex-col items-center overflow-hidden bg-[#050505] text-white selection:bg-yellow-500/30">
 
-      {/* 1. Ambient Background Effects */}
-      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none mix-blend-screen animate-pulse-slow"></div>
-      <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-teal-500/10 rounded-full blur-[120px] pointer-events-none mix-blend-screen"></div>
-      <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-rose-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+      {/* Background Radiance */}
+      <div className="fixed top-0 left-0 w-full h-[500px] bg-gradient-to-b from-yellow-900/10 to-transparent pointer-events-none"></div>
 
       {/* Nav */}
-      <header className="w-full max-w-7xl z-20 p-6 flex justify-between items-center text-sm font-medium tracking-wide">
-        <div className="flex items-center gap-2 font-bold text-xl tracking-tighter">
-          <div className="relative flex h-3 w-3">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-          </div>
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
-            CRASHALERT
-          </span>
+      <header className="w-full max-w-7xl z-20 p-6 flex justify-between items-center text-sm font-medium tracking-wide border-b border-white/5 bg-black/50 backdrop-blur-md sticky top-0">
+        <div className="flex items-center gap-2 font-bold text-xl tracking-tighter text-white">
+          CRASHALERT<span className="text-yellow-500">.</span>
         </div>
-        <nav className="hidden md:flex gap-8 text-gray-400">
-          <Link href="#features" className="hover:text-white transition-colors duration-300">Features</Link>
-          <Link href="#pricing" className="hover:text-white transition-colors duration-300">Pricing</Link>
-          <Link href="/login" className="px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 hover:border-white/20 transition-all text-white">
-            Login
-          </Link>
+        <nav className="sm:flex gap-6 text-gray-400 hidden">
+          <Link href="#pricing" className="hover:text-yellow-400 transition-colors duration-300">Pricing</Link>
+          <Link href="/login" className="hover:text-white transition-colors">Login</Link>
         </nav>
       </header>
 
       {/* Hero Section */}
-      <section className="relative z-10 w-full flex flex-col items-center justify-center pt-20 pb-24 px-4 text-center max-w-5xl mx-auto">
+      <section className="relative z-10 w-full flex flex-col items-center justify-center pt-24 pb-20 px-4 text-center max-w-4xl mx-auto">
 
-        {/* Signal Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md text-xs font-mono text-cyan-400 mb-8 shadow-[0_0_20px_rgba(34,211,238,0.1)]">
-          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_10px_currentColor]"></span>
-          LIVE MARKET SIGNALS ACTIVE
-        </div>
-
-        <h1 className="text-5xl md:text-8xl font-bold tracking-tight text-white mb-8 leading-[1.1]">
-          Predict The <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-500 to-amber-500">Crash.</span><br />
-          Protect The <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-500">Bag.</span>
+        <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-white mb-6 leading-tight">
+          Daily AI <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-600">Market Signals.</span>
         </h1>
 
         <p className="text-lg md:text-xl text-gray-400 max-w-2xl mb-12 leading-relaxed font-light">

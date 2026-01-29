@@ -12,11 +12,13 @@ const config: Config = {
                 background: "var(--background)",
                 foreground: "var(--foreground)",
                 glass: "rgba(255, 255, 255, 0.05)",
-                "glass-border": "rgba(255, 255, 255, 0.1)",
+                "glass-border": "rgba(255, 215, 0, 0.15)", // Gold tint
                 "risk-high": "#EF4444", // Red
                 "risk-mod": "#F59E0B",  // Amber
                 "risk-low": "#10B981",  // Emerald
-                "accent": "#6366f1",    // Indigo
+                "accent": "#FFD700",    // Gold
+                "gold": "#D4AF37",      // Metallic Gold
+                "gold-light": "#FCD34D",
             },
             backgroundImage: {
                 'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',

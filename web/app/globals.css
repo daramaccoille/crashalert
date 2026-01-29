@@ -3,7 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --background: #030712; /* Rich Black */
+  --background: #050505;
+  /* Deep Black */
   --foreground: #f9fafb;
 }
 
@@ -14,36 +15,44 @@ body {
   overflow-x: hidden;
 }
 
-/* Glassmorphism Utilities */
+/* Premium Glass Utilities */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(20, 20, 20, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 215, 0, 0.1);
+  /* Subtle Gold Border */
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
 }
 
 .glass-panel-hover:hover {
-  background: rgba(255, 255, 255, 0.07);
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 215, 0, 0.3);
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.1);
   transition: all 0.3s ease;
 }
 
 /* Typography Enhancements */
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   letter-spacing: -0.02em;
 }
 
-/* Custom Scrollbar */
+/* Custom Scrollbar - Gold/Dark */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
+
 ::-webkit-scrollbar-track {
-  background: #0f172a;
+  background: #0a0a0a;
 }
+
 ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #333;
   border-radius: 4px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: #d4af37;
+  /* Gold Hover */
 }
