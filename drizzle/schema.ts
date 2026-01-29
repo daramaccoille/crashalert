@@ -46,6 +46,17 @@ export const marketMetrics = pgTable('market_metrics', {
     // 1-Month Ahead (Consumer Pessimism)
     oneMonthAhead: decimal('one_month_ahead', { precision: 10, scale: 2 }),
 
+    // Volatility Scores (0 = Normal, 1 = Volatile, 2 = Very Volatile)
+    vixScore: integer('vix_score'),
+    yieldSpreadScore: integer('yield_spread_score'),
+    sp500peScore: integer('sp500_pe_score'),
+    junkBondSpreadScore: integer('junk_bond_spread_score'),
+    marginDebtScore: integer('margin_debt_score'),
+    insiderActivityScore: integer('insider_activity_score'),
+    cfnaiScore: integer('cfnai_score'),
+    liquidityScore: integer('liquidity_score'),
+    oneMonthAheadScore: integer('one_month_ahead_score'),
+
     // Computed Market Mode: BULL, BEAR, NEUTRAL
     marketMode: text('market_mode'),
 

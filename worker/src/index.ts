@@ -30,8 +30,20 @@ export default {
                     marginDebt: data.marginDebt.toFixed(2),
                     insiderActivity: data.insiderActivity.toFixed(2),
                     cfnai: data.cfnai.toFixed(2),
+
                     oneMonthAhead: data.oneMonthAhead.toFixed(2),
                     marketMode: data.marketMode,
+                    // Scores
+                    vixScore: data.vixScore,
+                    yieldSpreadScore: data.yieldSpreadScore,
+                    sp500peScore: data.sp500peScore,
+                    junkBondSpreadScore: data.junkBondSpreadScore,
+                    marginDebtScore: data.marginDebtScore,
+                    insiderActivityScore: data.insiderActivityScore,
+                    cfnaiScore: data.cfnaiScore,
+                    liquidityScore: data.liquidityScore,
+                    oneMonthAheadScore: data.oneMonthAheadScore,
+
                     rawJson: data
                 });
 
@@ -69,8 +81,20 @@ export default {
                 marginDebt: data.marginDebt.toFixed(2),
                 insiderActivity: data.insiderActivity.toFixed(2),
                 cfnai: data.cfnai.toFixed(2),
+
                 oneMonthAhead: data.oneMonthAhead.toFixed(2),
                 marketMode: data.marketMode,
+                // Scores
+                vixScore: data.vixScore,
+                yieldSpreadScore: data.yieldSpreadScore,
+                sp500peScore: data.sp500peScore,
+                junkBondSpreadScore: data.junkBondSpreadScore,
+                marginDebtScore: data.marginDebtScore,
+                insiderActivityScore: data.insiderActivityScore,
+                cfnaiScore: data.cfnaiScore,
+                liquidityScore: data.liquidityScore,
+                oneMonthAheadScore: data.oneMonthAheadScore,
+
                 rawJson: data
             });
 

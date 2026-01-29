@@ -22,6 +22,16 @@ export const marketMetrics = pgTable('market_metrics', {
     cfnai: decimal('cfnai', { precision: 10, scale: 2 }),
     liquidity: decimal('central_bank_liquidity', { precision: 12, scale: 2 }),
     oneMonthAhead: decimal('one_month_ahead', { precision: 10, scale: 2 }),
+    // Volatility Scores (0 = Normal, 1 = Volatile, 2 = Very Volatile)
+    vixScore: integer('vix_score'),
+    yieldSpreadScore: integer('yield_spread_score'),
+    sp500peScore: integer('sp500_pe_score'),
+    junkBondSpreadScore: integer('junk_bond_spread_score'),
+    marginDebtScore: integer('margin_debt_score'),
+    insiderActivityScore: integer('insider_activity_score'),
+    cfnaiScore: integer('cfnai_score'),
+    liquidityScore: integer('liquidity_score'),
+    oneMonthAheadScore: integer('one_month_ahead_score'),
     marketMode: text('market_mode'),
     rawJson: jsonb('raw_json'),
 });

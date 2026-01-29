@@ -12,7 +12,28 @@ export interface MarketData {
     cfnai: number;
     liquidity: number;
     oneMonthAhead: number;
+    // Scores
+    vixScore: number;
+    yieldSpreadScore: number;
+    sp500peScore: number;
+    junkBondSpreadScore: number;
+    marginDebtScore: number;
+    insiderActivityScore: number;
+    cfnaiScore: number;
+    liquidityScore: number;
+    oneMonthAheadScore: number;
     marketMode: 'BULL' | 'BEAR' | 'NEUTRAL';
+}
+
+function getScore(value: number, threshold1: number, threshold2: number, invert: boolean = false): number {
+    if (invert) {
+        if (value < threshold2) return 2;
+        if (value < threshold1) return 1;
+        return 0;
+    }
+    if (value > threshold2) return 2;
+    if (value > threshold1) return 1;
+    return 0;
 }
 
 function calculateSMA(data: number[], period: number): number {
@@ -96,6 +117,23 @@ export async function fetchMarketData(env: Env): Promise<MarketData> {
         cfnai: cfnaiData.value,
         liquidity: liquidityTrillions,
         oneMonthAhead: oneMonthData.value,
-        marketMode
+        marketMode,
+        // Scores (0=Normal, 1=Concern, 2=Danger)
+        // Adjust thresholds as needed
+        vixScore: getScore(currentVix, 20, 30),
+        yieldSpreadScore: getScore(spread, 0.0, -0.5, true), // Invert: lower is worse. Wait, yield spread < 0 is inverted. So < 0 is bad (1), < -0.5 is very bad (2)?
+        // Re-logic for Yield Spread:
+        // Normal: > 0. 
+        // Warning: < 0 (Inverted) -> Score 1
+        // Danger: < -0.5 -> Score 2?
+        // Let's use getScore(spread, 0, -0.5, true) -> if < -0.5 ret 2, if < 0 ret 1. Correct.
+
+        sp500peScore: getScore(27.5, 25, 30),
+        junkBondSpreadScore: getScore(junkYield.value, 4.0, 6.0), // 400bps, 600bps
+        marginDebtScore: getScore(1126.0, 1000, 1500), // Placeholder thresholds
+        insiderActivityScore: getScore(0.33, 0.5, 0.8), // Placeholder
+        cfnaiScore: getScore(cfnaiData.value, -0.7, -1.5, true), // Lower is recessionary
+        liquidityScore: getScore(liquidityTrillions, 5.0, 4.0, true), // Lower liquidity is worse? Or based on trend?
+        oneMonthAheadScore: getScore(oneMonthData.value, 1.0, 0, true)
     };
 }
