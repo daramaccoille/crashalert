@@ -49,6 +49,59 @@ export default function Home() {
     fetchMetrics();
   }, []);
 
+  const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState("");
+
+  const validateEmail = (email: string) => {
+    const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return re.test(String(email).toLowerCase());
+  };
+
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateEmail(email)) {
+      setEmailError("Please enter a valid email address.");
+      return;
+    }
+    setEmailError("");
+    // In a real app, this might sync to a newsletter or prepopulate signup
+    document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleSelectPlan = async (plan: string) => {
+    if (!validateEmail(email)) {
+      setEmailError("Please enter a valid email address first.");
+      // Scroll to input if needed or just focus
+      document.querySelector('input[type="email"]')?.parentElement?.scrollIntoView({ behavior: 'smooth' });
+      (document.querySelector('input[type="email"]') as HTMLInputElement)?.focus();
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, plan }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.url) {
+        window.location.href = data.url;
+      } else if (res.status === 409) {
+        // User already active
+        alert(data.error);
+        window.location.href = '/login';
+      } else {
+        console.error(data.error);
+        alert("Something went wrong. Please try again.");
+      }
+    } catch (err) {
+      console.error("Checkout validation failed", err);
+      alert("Connection error. Please try again.");
+    }
+  };
+
   return (
     <main className="min-h-screen relative flex flex-col items-center overflow-hidden bg-[#050505] text-white selection:bg-yellow-500/30">
 
@@ -82,14 +135,20 @@ export default function Home() {
         </p>
 
         {/* Input Form */}
-        <form className="w-full max-w-md flex flex-col gap-4 relative">
+        <form onSubmit={handleSubscribe} className="w-full max-w-md flex flex-col gap-4 relative">
           <input
             type="email"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (emailError) setEmailError("");
+            }}
             placeholder="email@example.com"
-            className="w-full bg-white/5 border border-white/20 rounded-lg px-6 py-4 text-white placeholder:text-zinc-600 focus:outline-none focus:border-yellow-500/50 transition focus:ring-1 focus:ring-yellow-500/20 backdrop-blur-sm"
+            className={`w-full bg-white/5 border ${emailError ? 'border-red-500 focus:border-red-500' : 'border-white/20 focus:border-yellow-500/50'} rounded-lg px-6 py-4 text-white placeholder:text-zinc-600 focus:outline-none transition focus:ring-1 ${emailError ? 'focus:ring-red-500/20' : 'focus:ring-yellow-500/20'} backdrop-blur-sm`}
           />
+          {emailError && <p className="text-xs text-red-500 text-left pl-2 absolute -bottom-5">{emailError}</p>}
           <p className="text-xs text-zinc-500 text-right w-full -mt-2">Enter your email to subscribe.</p>
-          <button className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black font-bold px-8 py-4 rounded-lg transition shadow-[0_0_25px_rgba(234,179,8,0.3)] border border-yellow-400/20">
+          <button type="submit" className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black font-bold px-8 py-4 rounded-lg transition shadow-[0_0_25px_rgba(234,179,8,0.3)] border border-yellow-400/20">
             Subscribe
           </button>
         </form>
@@ -127,7 +186,7 @@ export default function Home() {
                 <li className="flex gap-3 items-center"><span className="text-yellow-500">✓</span> Brief Predictions</li>
               </ul>
 
-              <button className="w-full py-3 rounded-lg border border-zinc-700 hover:bg-zinc-800 transition text-white font-medium">Select Basic</button>
+              <button onClick={() => handleSelectPlan('basic')} className="w-full py-3 rounded-lg border border-zinc-700 hover:bg-zinc-800 transition text-white font-medium">Select Basic</button>
             </div>
           </div>
 
@@ -162,7 +221,7 @@ export default function Home() {
                 <li className="flex gap-3 items-center"><span className="text-yellow-400">✓</span> Priority Alerts</li>
               </ul>
 
-              <button className="w-full py-3 rounded-lg bg-yellow-500 hover:bg-yellow-400 transition text-black font-bold shadow-[0_0_15px_rgba(234,179,8,0.3)]">Select Pro</button>
+              <button onClick={() => handleSelectPlan('pro')} className="w-full py-3 rounded-lg bg-yellow-500 hover:bg-yellow-400 transition text-black font-bold shadow-[0_0_15px_rgba(234,179,8,0.3)]">Select Pro</button>
             </div>
           </div>
 
@@ -186,7 +245,7 @@ export default function Home() {
                 <li className="flex gap-3 items-center"><span className="text-yellow-500">✓</span> 1-on-1 Support</li>
               </ul>
 
-              <button className="w-full py-3 rounded-lg border border-zinc-700 hover:bg-zinc-800 transition text-white font-medium">Select Expert</button>
+              <button onClick={() => handleSelectPlan('expert')} className="w-full py-3 rounded-lg border border-zinc-700 hover:bg-zinc-800 transition text-white font-medium">Select Expert</button>
             </div>
           </div>
 
