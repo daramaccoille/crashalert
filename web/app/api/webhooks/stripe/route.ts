@@ -29,9 +29,12 @@ export async function POST(req: NextRequest) {
 
     switch (event.type) {
         case 'checkout.session.completed': {
+            console.log('Webhook received: checkout.session.completed');
             const session = event.data.object as Stripe.Checkout.Session;
             const email = session.customer_details?.email;
             const planType = session.metadata?.plan || 'basic';
+
+            console.log(`Processing subscription for: ${email}, Plan: ${planType}`);
 
             if (email) {
                 console.log(`Payment successful for ${email} - Plan: ${planType}`);
