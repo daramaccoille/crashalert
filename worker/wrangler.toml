@@ -8,10 +8,10 @@ compatibility_date = "2024-01-01"
 # RESEND_KEY = "..."
 # GEMINI_KEY = "..."
 # DATABASE_URL = "..."
-CRASH_ALERT_PRICE_ID_BASIC="price_1Sv5BGGXCHuavzV6Hl4nZhCZ"
+CRASH_ALERT_PRICE_ID_BASIC="price_1Sv59HGXCHuavzV6AsejQbSC"
 CRASH_ALERT_PRICE_ID_PRO="price_1Sv59kGXCHuavzV6UnPJc0JM"
 CRASH_ALERT_PRICE_ID_ADVANCED="price_1Sv5BGGXCHuavzV6Hl4nZhCZ"
 NEXT_PUBLIC_URL="crashalert.online"
 
 [triggers]
-crons = ["0 7 * * 1-5"] # Run at 7 AM UTC (Market Close approx) Mon-Fri
+crons = ["0 7 * * 1-5"] # Run at 7 AM UTC (Market Open approx) Mon-Fri
