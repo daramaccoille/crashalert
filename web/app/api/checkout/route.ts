@@ -31,8 +31,16 @@ export async function POST(req: NextRequest) {
             }, { status: 409 });
         }
 
+
         // 2. Map plan to Price ID
         let priceId;
+        console.log('Received plan:', plan);
+        console.log('Env Vars Check:', {
+            BASIC: process.env.CRASH_ALERT_PRICE_ID_BASIC ? 'Loaded' : 'Missing',
+            PRO: process.env.CRASH_ALERT_PRICE_ID_PRO ? 'Loaded' : 'Missing',
+            ADVANCED: process.env.CRASH_ALERT_PRICE_ID_ADVANCED ? 'Loaded' : 'Missing'
+        });
+
         switch (plan) {
             case 'basic':
                 priceId = process.env.CRASH_ALERT_PRICE_ID_BASIC;
