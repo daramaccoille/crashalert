@@ -3,6 +3,7 @@ import Stripe from 'stripe';
 import { db } from '@/lib/db';
 import { subscribers } from '@/drizzle/schema';
 import { eq } from 'drizzle-orm';
+import { sendEmail } from '@/lib/email';
 
 export const runtime = 'edge';
 
@@ -38,20 +39,43 @@ export async function POST(req: NextRequest) {
 
             if (email) {
                 console.log(`Payment successful for ${email} - Plan: ${planType}`);
+
+                // Generate simple random password
+                const generatedPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-4).toUpperCase();
+
                 try {
                     await db.insert(subscribers).values({
                         email: email,
                         stripeId: session.customer as string,
                         active: true,
-                        plan: planType
+                        plan: planType,
+                        password: generatedPassword
                     }).onConflictDoUpdate({
                         target: subscribers.email,
                         set: {
                             active: true,
                             stripeId: session.customer as string,
-                            plan: planType
+                            plan: planType,
+                            password: generatedPassword // Reset password on re-sub? Maybe optional. Let's do it for now to ensure they have access.
                         }
                     });
+
+                    // Send Welcome Email with Password
+                    const welcomeHtml = `
+                        <div style="font-family: sans-serif; color: #333; max-width: 600px;">
+                            <h1>Welcome to CrashAlert ${planType.charAt(0).toUpperCase() + planType.slice(1)}!</h1>
+                            <p>Your subscription is now active.</p>
+                            <div style="background: #f4f4f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                                <p style="margin: 0; font-size: 14px; color: #666;">Your Login Credentials:</p>
+                                <p style="margin: 10px 0;"><strong>Email:</strong> ${email}</p>
+                                <p style="margin: 0;"><strong>Password:</strong> <code style="background: #fff; padding: 4px 8px; border-radius: 4px; border: 1px solid #ddd;">${generatedPassword}</code></p>
+                            </div>
+                            <p>Please login at <a href="https://crashalert.online/login">https://crashalert.online/login</a> to access your dashboard.</p>
+                        </div>
+                    `;
+
+                    await sendEmail(email, "Your CrashAlert Account Access", welcomeHtml);
+
                 } catch (dbError) {
                     console.error('DB Update Failed:', dbError);
                     return NextResponse.json({ error: 'DB Update Failed' }, { status: 500 });

@@ -8,6 +8,7 @@ export const subscribers = pgTable('subscribers', {
     active: boolean('active').default(false),
     createdAt: timestamp('created_at').defaultNow(),
     selectedAlerts: jsonb('selected_alerts').$type<string[]>(),
+    password: text('password'),
 });
 
 export const marketMetrics = pgTable('market_metrics', {

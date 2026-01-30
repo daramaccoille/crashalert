@@ -12,17 +12,34 @@ function LoginContent() {
     const [email, setEmail] = useState(initialEmail);
     const [password, setPassword] = useState("");
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Simulate login for demo
-        console.log("Logging in with:", { email, password, plan });
-        alert(`Logged in! Redirecting to dashboard/checkout for ${plan || 'dashboard'}...`);
-        // Here we would authenticate and then redirect to Stripe or Dashboard
-        if (plan) {
-            // Go to checkout
-        } else {
-            // Go to dashboard
-            window.location.href = "/dashboard";
+
+        try {
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+                alert(data.error || "Login failed");
+                return;
+            }
+
+            if (plan) {
+                // Upgrade/Purchase flow? Use API to get checkout link
+                // ... for now, assume login meant "I want to access my existing plan" or redirect to buy.
+                // If plan is in query param, maybe they want to buy it.
+                window.location.href = `/checkout?plan=${plan}`; // Simplified
+            } else {
+                window.location.href = "/dashboard";
+            }
+
+        } catch (err) {
+            console.error("Login error", err);
+            alert("Connection failed");
         }
     };
 

@@ -10,6 +10,7 @@ export const subscribers = pgTable('subscribers', {
     createdAt: timestamp('created_at').defaultNow(),
     // Enterprise only: Array of selected alert IDs (e.g. ['vix', 'liquidity'])
     selectedAlerts: jsonb('selected_alerts').$type<string[]>(),
+    password: text('password'), // Simple text storage for MVP (hash in production)
 });
 
 export const marketMetrics = pgTable('market_metrics', {

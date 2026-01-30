@@ -1,22 +1,51 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
-const AVAILABLE_METRICS = [
-    { id: "vix", label: "VIX Volatility Index", category: "Risk" },
-    { id: "yield_spread", label: "10Y-2Y Yield Spread", category: "Bonds" },
-    { id: "sp500_pe", label: "S&P 500 P/E Ratio", category: "Valuation" },
-    { id: "liquidity", label: "Global Liquidity Index", category: "Macro" },
-    { id: "junk_spread", label: "Junk Bond Spread", category: "Credit" },
-    { id: "put_call", label: "Put/Call Ratio", category: "Sentiment" },
-    { id: "dxy", label: "US Dollar Index (DXY)", category: "Forex" },
-    { id: "oil", label: "Crude Oil Prices", category: "Commodities" },
-    { id: "btc_corr", label: "Bitcoin Correlation", category: "Crypto" },
+interface MarketMetrics {
+    vix: number;
+    yieldSpread: string;
+    sp500pe: string;
+    liquidity: string;
+    junkBondSpread: string;
+    marketMode: string;
+    marginDebt: string;
+    insiderActivity: string;
+    cfnai: string;
+    createdAt: string;
+}
+
+const METRIC_DEFINITIONS = [
+    { id: "vix", label: "VIX (Volatility)", key: "vix", suffix: "", threshold: 20 },
+    { id: "yield", label: "Yield Spread", key: "yieldSpread", suffix: "%", threshold: 0, invert: true }, // < 0 is risk
+    { id: "pe", label: "S&P 500 P/E", key: "sp500pe", suffix: "", threshold: 25 },
+    { id: "liq", label: "Liquidity", key: "liquidity", suffix: "T", threshold: 5, invert: true },
+    { id: "junk", label: "Junk Bond Spread", key: "junkBondSpread", suffix: "bps", threshold: 500 },
+    { id: "cfnai", label: "CFNAI (Macro)", key: "cfnai", suffix: "", threshold: -0.7, invert: true },
 ];
 
 export default function Dashboard() {
-    const [selectedMetrics, setSelectedMetrics] = useState<string[]>(["vix", "yield_spread", "sp500_pe"]);
+    const [metrics, setMetrics] = useState<MarketMetrics | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [selectedMetrics, setSelectedMetrics] = useState<string[]>(["vix", "yield", "pe"]);
+
+    useEffect(() => {
+        async function fetchMetrics() {
+            try {
+                const res = await fetch('/api/metrics');
+                if (res.ok) {
+                    const data = await res.json();
+                    setMetrics(data);
+                }
+            } catch (e) {
+                console.error("Failed to load metrics", e);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchMetrics();
+    }, []);
 
     const toggleMetric = (id: string) => {
         if (selectedMetrics.includes(id)) {
@@ -29,6 +58,13 @@ export default function Dashboard() {
             setSelectedMetrics([...selectedMetrics, id]);
         }
     };
+
+    const getRiskColor = (val: number, threshold: number, invert = false) => {
+        const isRisk = invert ? val < threshold : val > threshold;
+        return isRisk ? 'text-red-500' : 'text-green-500';
+    };
+
+    if (loading) return <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center">Loading Market Data...</div>;
 
     return (
         <div className="min-h-screen bg-[#050505] text-white flex flex-col">
@@ -46,40 +82,66 @@ export default function Dashboard() {
             </header>
 
             <main className="flex-1 max-w-7xl mx-auto w-full p-6">
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold mb-2">Market Overview</h1>
-                    <p className="text-zinc-400">Customise your view by selecting key metrics below.</p>
+                <div className="mb-8 flex justify-between items-end">
+                    <div>
+                        <h1 className="text-3xl font-bold mb-2">Market Overview</h1>
+                        <p className="text-zinc-400">Real-time risk assessment and indicator tracking.</p>
+                    </div>
+                    {metrics && (
+                        <div className="text-right">
+                            <div className="text-sm text-zinc-500">Market Mode</div>
+                            <div className={`text-2xl font-black ${metrics.marketMode === 'BULL' ? 'text-green-500' : metrics.marketMode === 'BEAR' ? 'text-red-500' : 'text-yellow-500'}`}>
+                                {metrics.marketMode}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Metrics Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-                    {AVAILABLE_METRICS.map((metric) => (
-                        <div
-                            key={metric.id}
-                            onClick={() => toggleMetric(metric.id)}
-                            className={`cursor-pointer group relative p-6 rounded-xl border transition duration-300 ${selectedMetrics.includes(metric.id)
-                                    ? 'bg-yellow-500/10 border-yellow-500/50 shadow-[0_0_15px_rgba(234,179,8,0.1)]'
+                    {METRIC_DEFINITIONS.map((def) => {
+                        //@ts-ignore
+                        const val = metrics ? Number(metrics[def.key]) : 0;
+                        const displayVal = metrics ? val.toFixed(2) : '-';
+
+                        return (
+                            <div
+                                key={def.id}
+                                onClick={() => toggleMetric(def.id)}
+                                className={`cursor-pointer group relative p-6 rounded-xl border transition duration-300 ${selectedMetrics.includes(def.id)
+                                    ? 'bg-yellow-500/5 border-yellow-500/50 shadow-[0_0_15px_rgba(234,179,8,0.1)]'
                                     : 'bg-zinc-900/40 border-zinc-800 hover:border-zinc-700'
-                                }`}
-                        >
-                            <div className="flex justify-between items-start mb-4">
-                                <span className={`text-xs font-mono uppercase tracking-wider px-2 py-1 rounded ${selectedMetrics.includes(metric.id) ? 'bg-yellow-500/20 text-yellow-500' : 'bg-zinc-800 text-zinc-500'
-                                    }`}>
-                                    {metric.category}
-                                </span>
-                                {selectedMetrics.includes(metric.id) && (
-                                    <span className="text-yellow-500">✓</span>
-                                )}
+                                    }`}
+                            >
+                                <div className="flex justify-between items-start mb-4">
+                                    <span className={`text-xs font-mono uppercase tracking-wider px-2 py-1 rounded ${selectedMetrics.includes(def.id) ? 'bg-yellow-500/20 text-yellow-500' : 'bg-zinc-800 text-zinc-500'
+                                        }`}>
+                                        {def.label}
+                                    </span>
+                                    {selectedMetrics.includes(def.id) && (
+                                        <span className="text-yellow-500">✓</span>
+                                    )}
+                                </div>
+                                <div className="flex items-baseline gap-2">
+                                    <h3 className={`text-3xl font-bold ${metrics ? getRiskColor(val, def.threshold, def.invert) : 'text-zinc-400'}`}>
+                                        {displayVal}<span className="text-base font-normal text-zinc-500 ml-1">{def.suffix}</span>
+                                    </h3>
+                                </div>
+                                <p className="text-xs text-zinc-600 mt-2">
+                                    Risk Threshold: {def.invert ? '<' : '>'}{def.threshold}
+                                </p>
                             </div>
-                            <h3 className="text-lg font-bold mb-1">{metric.label}</h3>
-                            <p className="text-sm text-zinc-500">Click to {selectedMetrics.includes(metric.id) ? 'remove' : 'add'} to watchlist</p>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
 
-                {/* Placeholder for Charts/Data */}
-                <div className="p-8 rounded-2xl border border-white/5 bg-white/[0.02] flex items-center justify-center h-64 text-zinc-500">
-                    Real-time data charts would render here based on your selection.
+                {/* Selected Chart Area */}
+                <div className="p-8 rounded-xl border border-white/10 bg-zinc-900/50 min-h-[300px]">
+                    <h3 className="text-lg font-bold mb-4 text-white">Trend Analysis</h3>
+                    <div className="flex items-center justify-center h-48 text-zinc-500 text-sm">
+                        Chart visualization coming in next update.
+                        (Mock: {selectedMetrics.join(', ')})
+                    </div>
                 </div>
 
             </main>
