@@ -3,13 +3,13 @@ export async function sendEmail(
     subject: string,
     htmlContent: string,
     env: { BREVO_API_KEY: string }
-): Promise<boolean> {
+): Promise<{ success: boolean; error?: string }> {
     const url = 'https://api.brevo.com/v3/smtp/email';
 
-    // Sender configuration - you must verify this domain in Brevo dashboard
+    // Sender configuration - using dara@crashalert.online as it's likely the verified sender
     const sender = {
         name: "CrashAlert",
-        email: "noreply@crashalert.online"
+        email: "dara@crashalert.online"
     };
 
     const body = {
@@ -33,13 +33,13 @@ export async function sendEmail(
         if (!response.ok) {
             const errorText = await response.text();
             console.error(`Brevo Email Failed to ${to}: ${response.status} - ${errorText}`);
-            return false;
+            return { success: false, error: `${response.status} - ${errorText}` };
         }
 
         console.log(`Email sent successfully to ${to}`);
-        return true;
-    } catch (error) {
+        return { success: true };
+    } catch (error: any) {
         console.error("Error sending email via Brevo:", error);
-        return false;
+        return { success: false, error: error.message || String(error) };
     }
 }

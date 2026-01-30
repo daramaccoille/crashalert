@@ -53,14 +53,18 @@ export default {
 
                 // Test Email Send - Send a sample Pro email to admin
                 const sampleHtml = getProEmailHtml(data);
-                await sendEmail(
+                const emailResult = await sendEmail(
                     "metaldetectorsonline1@gmail.com",
                     "CrashAlert Update Test",
                     sampleHtml,
                     env
                 );
 
-                return new Response(JSON.stringify({ success: true, data }, null, 2), { headers: { 'content-type': 'application/json' } });
+                return new Response(JSON.stringify({
+                    success: true,
+                    data,
+                    emailResult
+                }, null, 2), { headers: { 'content-type': 'application/json' } });
             } catch (e: any) {
                 return new Response(`Error: ${e.message}`, { status: 500 });
             }
