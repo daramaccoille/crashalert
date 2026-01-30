@@ -172,9 +172,9 @@ export default function Dashboard() {
                         <span className="text-xs font-normal text-zinc-500 bg-zinc-800 px-2 py-1 rounded">Last 30 Days</span>
                     </h3>
 
-                    <div className="flex-1 w-full min-h-[300px]">
+                    <div className="w-full h-[400px]">
                         {history.length > 0 ? (
-                            <ResponsiveContainer width="100%" height="100%">
+                            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                                 <LineChart data={history}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
                                     <XAxis
