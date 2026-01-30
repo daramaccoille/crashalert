@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, boolean, jsonb, timestamp, integer, decimal } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, boolean, jsonb, timestamp, integer, decimal, varchar } from 'drizzle-orm/pg-core';
 
 export const subscribers = pgTable('subscribers', {
     id: uuid('id').defaultRandom().primaryKey(),
@@ -8,6 +8,7 @@ export const subscribers = pgTable('subscribers', {
     active: boolean('active').default(false),
     createdAt: timestamp('created_at').defaultNow(),
     selectedAlerts: jsonb('selected_alerts').$type<string[]>(),
+    password: varchar('password', { length: 255 }), // Updated to varchar as requested
 });
 
 export const marketMetrics = pgTable('market_metrics', {

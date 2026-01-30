@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "start": "next start",
+    "lint": "eslint",
+    "pages:build": "next-on-pages",
+    "deploy": "wrangler pages deploy .vercel/output/static --project-name crashalert"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
