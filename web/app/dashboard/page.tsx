@@ -2,6 +2,16 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import {
+    LineChart,
+    Line,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    Legend,
+    ResponsiveContainer
+} from 'recharts';
 
 interface MarketMetrics {
     vix: number;
@@ -17,42 +27,62 @@ interface MarketMetrics {
 }
 
 const METRIC_DEFINITIONS = [
-    { id: "vix", label: "VIX (Volatility)", key: "vix", suffix: "", threshold: 20 },
-    { id: "yield", label: "Yield Spread", key: "yieldSpread", suffix: "%", threshold: 0, invert: true }, // < 0 is risk
-    { id: "pe", label: "S&P 500 P/E", key: "sp500pe", suffix: "", threshold: 25 },
-    { id: "liq", label: "Liquidity", key: "liquidity", suffix: "T", threshold: 5, invert: true },
-    { id: "junk", label: "Junk Bond Spread", key: "junkBondSpread", suffix: "bps", threshold: 500 },
-    { id: "cfnai", label: "CFNAI (Macro)", key: "cfnai", suffix: "", threshold: -0.7, invert: true },
+    { id: "vix", label: "VIX (Volatility)", key: "vix", suffix: "", threshold: 20, color: "#ef4444" },
+    { id: "yield", label: "Yield Spread", key: "yieldSpread", suffix: "%", threshold: 0, invert: true, color: "#eab308" },
+    { id: "pe", label: "S&P 500 P/E", key: "sp500pe", suffix: "", threshold: 25, color: "#3b82f6" },
+    { id: "liq", label: "Liquidity", key: "liquidity", suffix: "T", threshold: 5, invert: true, color: "#10b981" },
+    { id: "junk", label: "Junk Bond Spread", key: "junkBondSpread", suffix: "bps", threshold: 500, color: "#a855f7" },
+    { id: "cfnai", label: "CFNAI (Macro)", key: "cfnai", suffix: "", threshold: -0.7, invert: true, color: "#f97316" },
 ];
 
 export default function Dashboard() {
     const [metrics, setMetrics] = useState<MarketMetrics | null>(null);
+    const [history, setHistory] = useState<MarketMetrics[]>([]);
     const [loading, setLoading] = useState(true);
-    const [selectedMetrics, setSelectedMetrics] = useState<string[]>(["vix", "yield", "pe"]);
+    const [selectedMetrics, setSelectedMetrics] = useState<string[]>(["vix", "yield"]);
 
     useEffect(() => {
-        async function fetchMetrics() {
+        async function fetchData() {
             try {
-                const res = await fetch('/api/metrics');
-                if (res.ok) {
-                    const data = await res.json();
+                // Fetch latest
+                const resLatest = await fetch('/api/metrics');
+                if (resLatest.ok) {
+                    const data = await resLatest.json();
                     setMetrics(data);
                 }
+
+                // Fetch history
+                const resHistory = await fetch('/api/metrics/history');
+                if (resHistory.ok) {
+                    const historyData = await resHistory.json();
+                    // Process history for chart (ensure numbers)
+                    const processed = historyData.map((item: any) => ({
+                        ...item,
+                        createdAt: new Date(item.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+                        vix: Number(item.vix),
+                        yieldSpread: Number(item.yieldSpread),
+                        sp500pe: Number(item.sp500pe),
+                        liquidity: Number(item.liquidity),
+                        junkBondSpread: Number(item.junkBondSpread),
+                        cfnai: Number(item.cfnai)
+                    }));
+                    setHistory(processed);
+                }
             } catch (e) {
-                console.error("Failed to load metrics", e);
+                console.error("Failed to load market data", e);
             } finally {
                 setLoading(false);
             }
         }
-        fetchMetrics();
+        fetchData();
     }, []);
 
     const toggleMetric = (id: string) => {
         if (selectedMetrics.includes(id)) {
             setSelectedMetrics(selectedMetrics.filter(m => m !== id));
         } else {
-            if (selectedMetrics.length >= 5) {
-                alert("You can select up to 5 metrics on your plan.");
+            if (selectedMetrics.length >= 3) { // Limit chart clutter
+                alert("Select up to 3 metrics for clear charting.");
                 return;
             }
             setSelectedMetrics([...selectedMetrics, id]);
@@ -136,11 +166,60 @@ export default function Dashboard() {
                 </div>
 
                 {/* Selected Chart Area */}
-                <div className="p-8 rounded-xl border border-white/10 bg-zinc-900/50 min-h-[300px]">
-                    <h3 className="text-lg font-bold mb-4 text-white">Trend Analysis</h3>
-                    <div className="flex items-center justify-center h-48 text-zinc-500 text-sm">
-                        Chart visualization coming in next update.
-                        (Mock: {selectedMetrics.join(', ')})
+                <div className="p-8 rounded-xl border border-white/10 bg-zinc-900/50 min-h-[400px] flex flex-col">
+                    <h3 className="text-lg font-bold mb-6 text-white flex items-center gap-2">
+                        Trend Analysis
+                        <span className="text-xs font-normal text-zinc-500 bg-zinc-800 px-2 py-1 rounded">Last 30 Days</span>
+                    </h3>
+
+                    <div className="flex-1 w-full min-h-[300px]">
+                        {history.length > 0 ? (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={history}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                                    <XAxis
+                                        dataKey="createdAt"
+                                        stroke="#666"
+                                        tick={{ fill: '#666', fontSize: 12 }}
+                                        tickLine={false}
+                                        axisLine={false}
+                                    />
+                                    <YAxis
+                                        stroke="#666"
+                                        tick={{ fill: '#666', fontSize: 12 }}
+                                        tickLine={false}
+                                        axisLine={false}
+                                        domain={['auto', 'auto']}
+                                    />
+                                    <Tooltip
+                                        contentStyle={{ backgroundColor: '#18181b', border: '1px solid #3f3f46', borderRadius: '8px' }}
+                                        itemStyle={{ color: '#e4e4e7' }}
+                                    />
+                                    <Legend wrapperStyle={{ paddingTop: '20px' }} />
+
+                                    {selectedMetrics.map(metricId => {
+                                        const def = METRIC_DEFINITIONS.find(d => d.id === metricId);
+                                        if (!def) return null;
+                                        return (
+                                            <Line
+                                                key={metricId}
+                                                type="monotone"
+                                                dataKey={def.key}
+                                                name={def.label}
+                                                stroke={def.color}
+                                                strokeWidth={2}
+                                                dot={false}
+                                                activeDot={{ r: 6 }}
+                                            />
+                                        );
+                                    })}
+                                </LineChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <div className="flex items-center justify-center h-full text-zinc-500">
+                                Not enough data for historical analysis.
+                            </div>
+                        )}
                     </div>
                 </div>
 
