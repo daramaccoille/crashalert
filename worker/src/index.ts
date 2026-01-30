@@ -108,7 +108,6 @@ export default {
             console.log(`Found ${activeSubscribers.length} active subscribers.`);
 
             // Pre-generate chart for Expert/Advanced users (reused to save API calls if same content)
-            // Or personalized? The prompt implies personalized, but let's start with a global market chart.
             // Using last 30 days of SPY history.
             const chartData = data.spyHistory.slice(0, 30).reverse(); // specific slice
             // Prediction mock: current price +/- 5% based on VIX
@@ -127,7 +126,7 @@ export default {
                 try {
                     switch (sub.plan) {
                         case 'expert':
-                        case 'advanced': // Fallback naming
+                        case 'advanced':
                             html = getExpertEmailHtml(data, globalChartUrl);
                             break;
                         case 'pro':
@@ -140,7 +139,6 @@ export default {
                     }
 
                     await sendEmail(sub.email, "Daily Market Risk Report", html, env);
-                    // Minimal delay to avoid rate limits if list is huge (not needed for MVP)
                 } catch (err) {
                     console.error(`Failed to email ${sub.email}:`, err);
                 }
@@ -151,4 +149,3 @@ export default {
         }
     },
 };
-
