@@ -2,13 +2,17 @@ import { fetchMarketData } from './market';
 import { generateTrendChartUrl } from './utils/charts';
 import { sendEmail } from './utils/email';
 import { getDb } from './db';
-import { marketMetrics } from './schema';
+import { subscribers, marketMetrics } from './schema';
+import { getBasicEmailHtml, getProEmailHtml, getExpertEmailHtml } from './templates/email-templates';
+import { eq } from 'drizzle-orm';
 
 export interface Env {
     DATABASE_URL: string;
     STRIPE_KEY: string;
     BREVO_API_KEY: string;
     GEMINI_KEY: string;
+    FRED_KEY: string;
+    AV_KEY: string;
 }
 
 export default {
@@ -47,11 +51,12 @@ export default {
                     rawJson: data
                 });
 
-                // Test Email Send
+                // Test Email Send - Send a sample Pro email to admin
+                const sampleHtml = getProEmailHtml(data);
                 await sendEmail(
                     "dara@crashalert.online",
                     "CrashAlert Update Test",
-                    "<p>Market data fetched and saved successfully.</p><pre>" + JSON.stringify(data, null, 2) + "</pre>",
+                    sampleHtml,
                     env
                 );
 
@@ -98,8 +103,48 @@ export default {
                 rawJson: data
             });
 
-            // 2. Determine Emails to send (Logic to be expanded)
-            // ExampleChart logic...
+            // 2. Determine Emails to send
+            const activeSubscribers = await db.select().from(subscribers).where(eq(subscribers.active, true));
+            console.log(`Found ${activeSubscribers.length} active subscribers.`);
+
+            // Pre-generate chart for Expert/Advanced users (reused to save API calls if same content)
+            // Or personalized? The prompt implies personalized, but let's start with a global market chart.
+            // Using last 30 days of SPY history.
+            const chartData = data.spyHistory.slice(0, 30).reverse(); // specific slice
+            // Prediction mock: current price +/- 5% based on VIX
+            const prediction = chartData[chartData.length - 1] * (1 + (data.oneMonthAhead / 100));
+
+            const globalChartUrl = generateTrendChartUrl(
+                'S&P 500 Trend',
+                chartData,
+                prediction,
+                chartData[chartData.length - 1] * 1.05, // Upper Bound
+                chartData[chartData.length - 1] * 0.95  // Lower Bound
+            );
+
+            for (const sub of activeSubscribers) {
+                let html = '';
+                try {
+                    switch (sub.plan) {
+                        case 'expert':
+                        case 'advanced': // Fallback naming
+                            html = getExpertEmailHtml(data, globalChartUrl);
+                            break;
+                        case 'pro':
+                            html = getProEmailHtml(data);
+                            break;
+                        case 'basic':
+                        default:
+                            html = getBasicEmailHtml(data);
+                            break;
+                    }
+
+                    await sendEmail(sub.email, "Daily Market Risk Report", html, env);
+                    // Minimal delay to avoid rate limits if list is huge (not needed for MVP)
+                } catch (err) {
+                    console.error(`Failed to email ${sub.email}:`, err);
+                }
+            }
 
         } catch (e) {
             console.error("Cron failed:", e);

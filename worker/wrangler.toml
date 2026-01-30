@@ -8,6 +8,8 @@ compatibility_date = "2024-01-01"
 # RESEND_KEY = "..."
 # GEMINI_KEY = "..."
 # DATABASE_URL = "..."
+# FRED_KEY = "..."
+# AV_KEY = "..."
 # NEXT_PUBLIC_URL="https://crashalert.online"
 
 [triggers]

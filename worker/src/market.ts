@@ -23,6 +23,7 @@ export interface MarketData {
     liquidityScore: number;
     oneMonthAheadScore: number;
     marketMode: 'BULL' | 'BEAR' | 'NEUTRAL';
+    spyHistory: number[];
 }
 
 function getScore(value: number, threshold1: number, threshold2: number, invert: boolean = false): number {
@@ -44,14 +45,8 @@ function calculateSMA(data: number[], period: number): number {
 }
 
 export async function fetchMarketData(env: Env): Promise<MarketData> {
-    const av = new AlphaVantageClient(env.GEMINI_KEY); // Using GEMINI_KEY as placeholder? Wait, need separate keys.
-    // The user provided keys in the prompt:
-    // FRED: 0660086ceb0adf4839c6fcbfa35b3526
-    // AV: BL1KL3HFI4C31SPD
-
-    // In production, use env.AV_KEY. defining fallback here for user context awareness
-    const AV_KEY = "BL1KL3HFI4C31SPD";
-    const FRED_KEY = "0660086ceb0adf4839c6fcbfa35b3526";
+    const AV_KEY = env.AV_KEY;
+    const FRED_KEY = env.FRED_KEY;
 
     const avClient = new AlphaVantageClient(AV_KEY);
 
@@ -134,6 +129,7 @@ export async function fetchMarketData(env: Env): Promise<MarketData> {
         insiderActivityScore: getScore(0.33, 0.5, 0.8), // Placeholder
         cfnaiScore: getScore(cfnaiData.value, -0.7, -1.5, true), // Lower is recessionary
         liquidityScore: getScore(liquidityTrillions, 5.0, 4.0, true), // Lower liquidity is worse? Or based on trend?
-        oneMonthAheadScore: getScore(oneMonthData.value, 1.0, 0, true)
+        oneMonthAheadScore: getScore(oneMonthData.value, 1.0, 0, true),
+        spyHistory: spyHistory // Return full history for charting
     };
 }
