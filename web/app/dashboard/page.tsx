@@ -81,6 +81,10 @@ export default function Dashboard() {
         if (selectedMetrics.includes(id)) {
             setSelectedMetrics(selectedMetrics.filter(m => m !== id));
         } else {
+            if (selectedMetrics.length >= 8) {
+                alert("You can select up to 8 metrics.");
+                return;
+            }
             setSelectedMetrics([...selectedMetrics, id]);
         }
     };
@@ -123,44 +127,96 @@ export default function Dashboard() {
                     )}
                 </div>
 
-                {/* Metrics Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+                {/* Metrics Toggles Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-12">
                     {METRIC_DEFINITIONS.map((def) => {
                         //@ts-ignore
                         const val = metrics ? Number(metrics[def.key]) : 0;
                         const displayVal = metrics ? val.toFixed(2) : '-';
-                        const isSelected = true; // All charts are always "selected" now
+                        const isSelected = selectedMetrics.includes(def.id);
 
                         return (
                             <div
                                 key={def.id}
-                                className={`group relative p-6 rounded-xl border transition duration-300 h-[300px] flex flex-col justify-between ${isSelected
-                                    ? 'bg-zinc-900/40 border-zinc-800 hover:border-zinc-700'
-                                    : 'bg-zinc-900/40 border-zinc-800 hover:border-zinc-700'
+                                onClick={() => toggleMetric(def.id)}
+                                className={`cursor-pointer group relative p-4 rounded-xl border transition duration-200 flex flex-col justify-between ${isSelected
+                                    ? 'bg-yellow-500/10 border-yellow-500/50 shadow-[0_0_10px_rgba(234,179,8,0.1)]'
+                                    : 'bg-zinc-900/40 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800/50'
                                     }`}
                             >
-                                <div className="flex justify-between items-start mb-2">
-                                    <span className={`text-xs font-mono uppercase tracking-wider px-2 py-1 rounded ${isSelected ? 'bg-zinc-800 text-zinc-500' : 'bg-zinc-800 text-zinc-500'
-                                        }`}>
+                                <div className="flex justify-between items-center mb-2">
+                                    <span className={`text-[10px] font-mono uppercase tracking-wider font-bold ${isSelected ? 'text-yellow-500' : 'text-zinc-500'}`}>
                                         {def.label}
                                     </span>
+                                    {isSelected && <span className="text-yellow-500 text-xs">●</span>}
                                 </div>
-                                <div className="flex items-baseline gap-2 mb-4">
-                                    <h3 className={`text-3xl font-bold ${metrics ? getRiskColor(val, def.threshold, def.invert) : 'text-zinc-400'}`}>
-                                        {displayVal}<span className="text-base font-normal text-zinc-500 ml-1">{def.suffix}</span>
+                                <div className="flex items-baseline gap-1">
+                                    <h3 className={`text-xl font-bold ${metrics ? getRiskColor(val, def.threshold, def.invert) : 'text-zinc-400'}`}>
+                                        {displayVal}<span className="text-xs font-normal text-zinc-500 ml-0.5">{def.suffix}</span>
                                     </h3>
                                 </div>
+                            </div>
+                        );
+                    })}
+                </div>
 
-                                <div className="flex-1 w-full min-h-[100px]">
+                <div className="mb-6 border-t border-white/5 pt-6">
+                    <h2 className="text-xl font-bold mb-4">Detailed Analysis <span className="text-sm font-normal text-zinc-500 ml-2">({selectedMetrics.length}/8 Selected)</span></h2>
+                </div>
+
+                {/* Selected Charts Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+                    {selectedMetrics.map((metricId) => {
+                        const def = METRIC_DEFINITIONS.find(d => d.id === metricId);
+                        if (!def) return null;
+
+                        //@ts-ignore
+                        const val = metrics ? Number(metrics[def.key]) : 0;
+                        const displayVal = metrics ? val.toFixed(2) : '-';
+
+                        return (
+                            <div
+                                key={def.id}
+                                className="group relative p-6 rounded-xl border border-zinc-800 bg-zinc-900/40 h-[350px] flex flex-col"
+                            >
+                                <div className="flex justify-between items-start mb-4">
+                                    <div>
+                                        <h3 className="font-bold text-lg text-white">{def.label}</h3>
+                                        <div className={`text-2xl font-bold mt-1 ${metrics ? getRiskColor(val, def.threshold, def.invert) : 'text-zinc-400'}`}>
+                                            {displayVal}<span className="text-sm text-zinc-500 ml-1">{def.suffix}</span>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-xs text-zinc-500">Risk Threshold</p>
+                                        <p className="text-xs font-mono text-zinc-400">{def.invert ? '<' : '>'}{def.threshold}</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex-1 w-full min-h-[0]">
                                     {history.length > 0 ? (
                                         <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                                             <LineChart data={history}>
-                                                <XAxis dataKey="createdAt" hide />
-                                                <YAxis hide domain={['auto', 'auto']} />
+                                                <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                                                <XAxis
+                                                    dataKey="createdAt"
+                                                    stroke="#52525b"
+                                                    tick={{ fill: '#71717a', fontSize: 10 }}
+                                                    tickLine={false}
+                                                    axisLine={false}
+                                                    interval="preserveStartEnd"
+                                                />
+                                                <YAxis
+                                                    stroke="#52525b"
+                                                    tick={{ fill: '#71717a', fontSize: 10 }}
+                                                    tickLine={false}
+                                                    axisLine={false}
+                                                    domain={['auto', 'auto']}
+                                                    width={30}
+                                                />
                                                 <Tooltip
                                                     contentStyle={{ backgroundColor: '#18181b', border: '1px solid #3f3f46', fontSize: '12px' }}
                                                     itemStyle={{ color: '#e4e4e7' }}
-                                                    labelStyle={{ display: 'none' }}
+                                                    labelStyle={{ color: '#a1a1aa' }}
                                                 />
                                                 <Line
                                                     type="monotone"
@@ -168,18 +224,14 @@ export default function Dashboard() {
                                                     stroke={def.color}
                                                     strokeWidth={2}
                                                     dot={false}
-                                                    isAnimationActive={false}
+                                                    activeDot={{ r: 4, fill: def.color }}
                                                 />
                                             </LineChart>
                                         </ResponsiveContainer>
                                     ) : (
-                                        <div className="text-xs text-zinc-600 flex items-center justify-center h-full">No History</div>
+                                        <div className="text-xs text-zinc-600 flex items-center justify-center h-full">No History Data Available</div>
                                     )}
                                 </div>
-
-                                <p className="text-xs text-zinc-600 mt-4 text-right">
-                                    Risk Threshold: {def.invert ? '<' : '>'}{def.threshold}
-                                </p>
                             </div>
                         );
                     })}
