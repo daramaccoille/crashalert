@@ -29,7 +29,7 @@ function LoginContent() {
             }
 
             if (plan) {
-                // Upgrade/Purchase flow? Use API to get checkout link
+                // Upgrade/Downgrade/Cancel Purchase flow? Use API to get checkout link
                 // ... for now, assume login meant "I want to access my existing plan" or redirect to buy.
                 // If plan is in query param, maybe they want to buy it.
                 window.location.href = `/checkout?plan=${plan}`; // Simplified
