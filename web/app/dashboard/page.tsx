@@ -106,7 +106,18 @@ export default function Dashboard() {
                     </div>
                     <div className="flex items-center gap-4">
                         <span className="text-sm text-zinc-400">Welcome, <strong>Expert User</strong></span>
-                        <Link href="/" className="text-xs border border-white/10 px-3 py-1.5 rounded hover:bg-white/5 transition">Sign Out</Link>
+                        <button
+                            onClick={() => {
+                                fetch('/api/portal', { method: 'POST' })
+                                    .then(res => res.json())
+                                    .then(data => { if (data.url) window.location.href = data.url; })
+                                    .catch(err => alert("Failed to load portal"));
+                            }}
+                            className="text-xs border border-white/10 px-3 py-1.5 rounded hover:bg-white/5 transition mr-2"
+                        >
+                            Manage Subscription
+                        </button>
+                        <Link href="/" className="text-xs text-zinc-500 hover:text-white transition">Sign Out</Link>
                     </div>
                 </div>
             </header>

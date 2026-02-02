@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { subscribers } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
+import bcrypt from 'bcryptjs';
 
 export const runtime = 'edge';
 
@@ -25,8 +26,9 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Subscription is not active" }, { status: 403 });
         }
 
-        // For MVP, simple string comparison. In production, use bcrypt/argon2.
-        if (user.password !== password) {
+        // Use bcrypt to compare password with hash
+        const isMatch = await bcrypt.compare(password, user.password || '');
+        if (!isMatch) {
             return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
         }
 

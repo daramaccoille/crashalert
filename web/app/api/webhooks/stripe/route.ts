@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { subscribers } from '@/drizzle/schema';
 import { eq } from 'drizzle-orm';
 import { sendEmail } from '@/lib/email';
+import bcrypt from 'bcryptjs';
 
 export const runtime = 'edge';
 
@@ -42,6 +43,7 @@ export async function POST(req: NextRequest) {
 
                 // Generate simple random password
                 const generatedPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-4).toUpperCase();
+                const hashedPassword = await bcrypt.hash(generatedPassword, 10);
 
                 try {
                     await db.insert(subscribers).values({
@@ -49,14 +51,14 @@ export async function POST(req: NextRequest) {
                         stripeId: session.customer as string,
                         active: true,
                         plan: planType,
-                        password: generatedPassword
+                        password: hashedPassword
                     }).onConflictDoUpdate({
                         target: subscribers.email,
                         set: {
                             active: true,
                             stripeId: session.customer as string,
                             plan: planType,
-                            password: generatedPassword // Reset password on re-sub? Maybe optional. Let's do it for now to ensure they have access.
+                            password: hashedPassword
                         }
                     });
 
