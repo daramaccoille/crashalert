@@ -23,6 +23,7 @@ export interface MarketData {
     liquidityScore: number;
     oneMonthAheadScore: number;
     marketMode: 'BULL' | 'BEAR' | 'NEUTRAL';
+    sentiment?: string;
     spyHistory: number[];
 }
 

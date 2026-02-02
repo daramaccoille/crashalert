@@ -36,19 +36,19 @@ const footerStyle = `
 `;
 
 function getModeColor(mode: string) {
-    if (mode === 'BULL') return '#4CAF50'; // Green
-    if (mode === 'BEAR') return '#F44336'; // Red
-    return '#FFC107'; // Amber/Neutral
+  if (mode === 'BULL') return '#4CAF50'; // Green
+  if (mode === 'BEAR') return '#F44336'; // Red
+  return '#FFC107'; // Amber/Neutral
 }
 
 function getScoreColor(score: number) {
-    if (score === 0) return '#4CAF50';
-    if (score === 1) return '#FF9800';
-    return '#F44336';
+  if (score === 0) return '#4CAF50';
+  if (score === 1) return '#FF9800';
+  return '#F44336';
 }
 
 function generateCommonHeader(title: string) {
-    return `
+  return `
       <div style="${headerStyle}">
         <h1 style="margin:0; font-size: 24px;">CRASH ALERT</h1>
         <p style="margin:5px 0 0; font-size: 14px; color: #fff;">${title}</p>
@@ -57,8 +57,8 @@ function generateCommonHeader(title: string) {
 }
 
 function generateMetricRow(label: string, value: string | number, score: number) {
-    const color = getScoreColor(score);
-    return `
+  const color = getScoreColor(score);
+  return `
       <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 10px 0;">
         <span>${label}</span>
         <span style="font-weight: bold; color: ${color};">${value}</span>
@@ -67,7 +67,7 @@ function generateMetricRow(label: string, value: string | number, score: number)
 }
 
 export function getBasicEmailHtml(data: MarketData): string {
-    return `
+  return `
     <div style="${cleanStyle}">
       ${generateCommonHeader('Basic Market Update')}
       <div style="${cardStyle}">
@@ -77,6 +77,13 @@ export function getBasicEmailHtml(data: MarketData): string {
         ${generateMetricRow('VIX (Volatility)', data.vix.toFixed(2), data.vixScore)}
         ${generateMetricRow('Yield Spread 10y-2y', data.yieldSpread.toFixed(2), data.yieldSpreadScore)}
         ${generateMetricRow('Market Liquidity (Trillions)', '$' + data.liquidity.toFixed(2), data.liquidityScore)}
+        
+        ${data.sentiment ? `
+        <div style="margin-top: 15px; padding: 10px; background: #f0f0f0; border-radius: 4px; font-size: 13px; color: #666;">
+             <strong>AI Insight:</strong> 
+             <span style="filter: blur(4px);">Market conditions suggest significant volatility ahead...</span>
+        </div>
+        ` : ''}
       </div>
       
       <div style="${cardStyle}">
@@ -94,7 +101,7 @@ export function getBasicEmailHtml(data: MarketData): string {
 }
 
 export function getProEmailHtml(data: MarketData): string {
-    return `
+  return `
     <div style="${cleanStyle}">
       ${generateCommonHeader('Pro Market Risk Report')}
       
@@ -102,6 +109,13 @@ export function getProEmailHtml(data: MarketData): string {
         <h2 style="color: ${getModeColor(data.marketMode)}; text-align: center;">Market Mode: ${data.marketMode}</h2>
         <p style="text-align: center; color: #666;">Comprehensive analysis of 9 key risk signals.</p>
         <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+
+        ${data.sentiment ? `
+        <div style="background: #FFF8E1; padding: 15px; border-left: 4px solid #D4AF37; margin-bottom: 20px;">
+             <strong style="color: #D4AF37;">🤖 AI Insight:</strong> 
+             <span style="font-style: italic;">"${data.sentiment}"</span>
+        </div>
+        ` : ''}
 
         ${generateMetricRow('VIX', data.vix.toFixed(2), data.vixScore)}
         ${generateMetricRow('Yield Spread (10Y-2Y)', data.yieldSpread.toFixed(2), data.yieldSpreadScore)}
@@ -122,24 +136,22 @@ export function getProEmailHtml(data: MarketData): string {
   `;
 }
 
-export function getExpertEmailHtml(data: MarketData, chartUrl?: string): string {
-    const chartSection = chartUrl ? `
-      <div style="${cardStyle}">
-        <h3 style="margin-top: 0;">Trend Forecast</h3>
-        <img src="${chartUrl}" alt="Market Trend Chart" style="width: 100%; border-radius: 5px; border: 1px solid #ddd;" />
-        <p style="font-size: 13px; color: #666; margin-top: 10px;">
-           Exclusive expert trend analysis showing projected support/resistance bands based on current volatility and liquidity flows.
-        </p>
+const aiSection = data.sentiment ? `
+      <div style="${cardStyle}; border-left: 4px solid #D4AF37;">
+        <h3 style="margin-top: 0; color: #D4AF37; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">🤖 AI Market Analyst</h3>
+        <p style="font-style: italic; font-size: 16px; color: #444; margin-bottom: 0;">"${data.sentiment}"</p>
       </div>
     ` : '';
 
-    return `
+return `
     <div style="${cleanStyle}">
       ${generateCommonHeader('Expert Market Intelligence')}
       
       <div style="${cardStyle}">
         <h2 style="color: ${getModeColor(data.marketMode)}; text-align: center;">Market Evaluation: ${data.marketMode}</h2>
       </div>
+
+      ${aiSection}
 
       ${chartSection}
 

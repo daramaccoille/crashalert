@@ -82,6 +82,7 @@ export default {
 
             // 0. AI Sentiment
             const sentiment = await generateMarketSentiment(data, env);
+            data.sentiment = sentiment;
 
             // 1. Save to DB
             const db = getDb(env.DATABASE_URL);
