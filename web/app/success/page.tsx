@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Suspense } from "react";
+import EmailPreview from "@/components/EmailPreview";
 import { useSearchParams } from "next/navigation";
 
 function SuccessContent() {
@@ -15,10 +16,18 @@ function SuccessContent() {
                     <span className="text-4xl">🎉</span>
                 </div>
 
-                <h1 className="text-3xl font-bold text-white mb-4">Subscription Confirmed!</h1>
-                <p className="text-zinc-400 mb-8 leading-relaxed">
-                    Thank you for joining CrashAlert. Your payment was successful. We have sent a confirmation email to your inbox.
+                <h1 className="text-3xl font-bold text-white mb-2">Subscription Confirmed!</h1>
+                <p className="text-zinc-400 mb-6 leading-relaxed text-sm">
+                    Checks your inbox for a <strong>Welcome Email</strong> containing your <strong>Dashboard Password</strong>. You will need this to manage your subscription preferences.
                 </p>
+
+                {/* Email Preview Teaser */}
+                <div className="mb-8 flex flex-col items-center">
+                    <p className="text-xs text-yellow-500 uppercase tracking-widest mb-3">Your Daily Report Preview</p>
+                    <div className="transform scale-90 origin-top">
+                        <EmailPreview plan="pro" />
+                    </div>
+                </div>
 
                 {sessionId && (
                     <div className="mb-6 p-3 bg-white/5 rounded text-xs text-zinc-600 font-mono break-all">

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Ticker from "@/components/Ticker";
+import EmailPreview from "@/components/EmailPreview";
 import { useEffect, useState } from "react";
 
 export default function Home() {
@@ -164,6 +165,7 @@ export default function Home() {
       <section id="pricing" className="w-full max-w-7xl px-6 py-24 z-10">
         <div className="grid xl:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-8 items-start">
 
+
           {/* Basic Card */}
           <div className="glass-panel p-1 rounded-2xl bg-zinc-900/50 border border-zinc-800 hover:border-zinc-700 transition duration-300">
             <div className="bg-[#0c0c0c] rounded-xl p-8 h-full flex flex-col">
@@ -172,12 +174,9 @@ export default function Home() {
                 <div className="text-4xl font-bold text-yellow-500">{currency}1 <span className="text-sm text-gray-500 font-normal">/ month</span></div>
               </div>
 
-              <div className="w-full h-32 bg-zinc-900 rounded-lg mb-6 border border-zinc-800 flex items-center justify-center relative overflow-hidden group">
-                <div className="absolute inset-0 bg-gradient-to-tr from-transparent to-white/5"></div>
-                <span className="text-zinc-700 text-sm font-mono">Market Snapshot</span>
-                <svg className="absolute bottom-0 left-0 right-0 h-16 w-full text-zinc-700 opacity-50" viewBox="0 0 100 20" preserveAspectRatio="none">
-                  <path d="M0 20 L0 15 L20 18 L40 10 L60 14 L80 5 L100 12 L100 20 Z" fill="currentColor" />
-                </svg>
+              {/* Preview */}
+              <div className="w-full mb-6 transform hover:scale-105 transition duration-500">
+                <EmailPreview plan="basic" />
               </div>
 
               <ul className="space-y-4 mb-8 text-zinc-400 text-sm flex-1">
@@ -201,17 +200,9 @@ export default function Home() {
                 <div className="text-4xl font-bold text-yellow-400">{currency}5 <span className="text-sm text-zinc-500 font-normal">/ month</span></div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 mb-6">
-                <div className="h-16 bg-zinc-800/50 rounded border border-zinc-700/50 flex items-center justify-center p-2">
-                  <div className="w-full h-full bg-zinc-900 rounded relative overflow-hidden">
-                    <div className="absolute bottom-0 left-0 w-full h-1/2 bg-yellow-500/10"></div>
-                    <div className="absolute bottom-2 left-2 w-4 h-8 bg-yellow-500/50 rounded-sm"></div>
-                    <div className="absolute bottom-2 left-8 w-4 h-5 bg-zinc-700 rounded-sm"></div>
-                  </div>
-                </div>
-                <div className="h-16 bg-zinc-800/50 rounded border border-zinc-700/50 flex items-center justify-center p-2">
-                  <div className="text-[10px] text-zinc-400 text-center leading-tight">AI Analysis &<br />Top Picks</div>
-                </div>
+              {/* Preview */}
+              <div className="w-full mb-6 transform hover:scale-105 transition duration-500 shadow-[0_0_30px_rgba(234,179,8,0.1)]">
+                <EmailPreview plan="pro" />
               </div>
 
               <ul className="space-y-4 mb-8 text-gray-300 text-sm flex-1">
@@ -233,9 +224,9 @@ export default function Home() {
                 <div className="text-4xl font-bold text-yellow-500">{currency}10 <span className="text-sm text-gray-500 font-normal">/ month</span></div>
               </div>
 
-              <div className="w-full h-32 bg-zinc-900 rounded-lg mb-6 border border-zinc-800 flex items-center justify-center relative overflow-hidden group">
-                <div className="absolute inset-0 bg-dotted-pattern opacity-20"></div>
-                <span className="text-zinc-500 text-sm font-mono z-10">Custom Metrics</span>
+              {/* Preview */}
+              <div className="w-full mb-6 transform hover:scale-105 transition duration-500">
+                <EmailPreview plan="expert" />
               </div>
 
               <ul className="space-y-4 mb-8 text-zinc-400 text-sm flex-1">
@@ -248,7 +239,6 @@ export default function Home() {
               <button onClick={() => handleSelectPlan('expert')} className="w-full py-3 rounded-lg border border-zinc-700 hover:bg-zinc-800 transition text-white font-medium">Select Expert</button>
             </div>
           </div>
-
         </div>
       </section>
 
