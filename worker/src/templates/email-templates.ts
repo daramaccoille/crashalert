@@ -136,14 +136,23 @@ export function getProEmailHtml(data: MarketData): string {
   `;
 }
 
-const aiSection = data.sentiment ? `
-      <div style="${cardStyle}; border-left: 4px solid #D4AF37;">
+export function getExpertEmailHtml(data: MarketData, chartUrl: string): string {
+  const aiSection = data.sentiment ? `
+      <div style="${cardStyle} border-left: 4px solid #D4AF37;">
         <h3 style="margin-top: 0; color: #D4AF37; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">🤖 AI Market Analyst</h3>
         <p style="font-style: italic; font-size: 16px; color: #444; margin-bottom: 0;">"${data.sentiment}"</p>
       </div>
     ` : '';
 
-return `
+  const chartSection = chartUrl ? `
+      <div style="${cardStyle}">
+        <h3 style="margin-top: 0;">Market Forecast Chart</h3>
+        <img src="${chartUrl}" alt="Market Forecast" style="width: 100%; border-radius: 5px; border: 1px solid #eee;" />
+        <p style="font-size: 12px; color: #999; text-align: center; margin-top: 5px;">Projection based on VIX and historical volatility.</p>
+      </div>
+  ` : '';
+
+  return `
     <div style="${cleanStyle}">
       ${generateCommonHeader('Expert Market Intelligence')}
       
