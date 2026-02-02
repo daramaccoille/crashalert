@@ -60,6 +60,7 @@ export const marketMetrics = pgTable('market_metrics', {
 
     // Computed Market Mode: BULL, BEAR, NEUTRAL
     marketMode: text('market_mode'),
+    sentiment: text('sentiment'), // AI-generated summary
 
     // Raw Data Dump (for AI context or extra debugging)
     rawJson: jsonb('raw_json'),

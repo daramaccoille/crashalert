@@ -23,6 +23,7 @@ interface MarketMetrics {
     marginDebt: string;
     insiderActivity: string;
     cfnai: string;
+    sentiment?: string;
     createdAt: string;
 }
 
@@ -122,7 +123,21 @@ export default function Dashboard() {
                 </div>
             </header>
 
+
+
             <main className="flex-1 max-w-7xl mx-auto w-full p-6">
+
+                {/* AI Sentiment Banner */}
+                {metrics?.sentiment && (
+                    <div className="mb-8 p-4 rounded-xl bg-gradient-to-r from-yellow-500/10 to-transparent border border-yellow-500/20 flex items-start gap-4">
+                        <div className="bg-yellow-500/20 p-2 rounded-lg text-yellow-500 text-xl">🤖</div>
+                        <div>
+                            <h3 className="text-sm font-bold text-yellow-500 uppercase tracking-wider mb-1">AI Market Analyst</h3>
+                            <p className="text-zinc-200 text-lg leading-relaxed font-medium">"{metrics.sentiment}"</p>
+                        </div>
+                    </div>
+                )}
+
                 <div className="mb-8 flex justify-between items-end">
                     <div>
                         <h1 className="text-3xl font-bold mb-2">Market Overview</h1>

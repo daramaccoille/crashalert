@@ -1,5 +1,6 @@
 import { fetchMarketData } from './market';
 import { generateTrendChartUrl } from './utils/charts';
+import { generateMarketSentiment } from './utils/ai';
 import { sendEmail } from './utils/email';
 import { getDb } from './db';
 import { subscribers, marketMetrics } from './schema';
@@ -79,6 +80,9 @@ export default {
             const data = await fetchMarketData(env);
             console.log("Market Data Fetched:", JSON.stringify(data));
 
+            // 0. AI Sentiment
+            const sentiment = await generateMarketSentiment(data, env);
+
             // 1. Save to DB
             const db = getDb(env.DATABASE_URL);
             await db.insert(marketMetrics).values({
@@ -93,6 +97,8 @@ export default {
 
                 oneMonthAhead: data.oneMonthAhead.toFixed(2),
                 marketMode: data.marketMode,
+                sentiment: sentiment,
+
                 // Scores
                 vixScore: data.vixScore,
                 yieldSpreadScore: data.yieldSpreadScore,

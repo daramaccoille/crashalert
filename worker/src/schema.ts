@@ -34,5 +34,6 @@ export const marketMetrics = pgTable('market_metrics', {
     liquidityScore: integer('liquidity_score'),
     oneMonthAheadScore: integer('one_month_ahead_score'),
     marketMode: text('market_mode'),
+    sentiment: text('sentiment'), // AI-generated summary
     rawJson: jsonb('raw_json'),
 });
