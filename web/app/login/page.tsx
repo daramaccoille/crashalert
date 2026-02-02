@@ -83,7 +83,7 @@ function LoginContent() {
             </form>
 
             <div className="mt-8 text-center text-sm text-zinc-500">
-                Don't have an account? <Link href="/signup" className="text-yellow-500 hover:text-yellow-400">Sign up</Link>
+                Don't have an account? <Link href="/#pricing" className="text-yellow-500 hover:text-yellow-400">Sign up</Link>
             </div>
         </div>
     );
