@@ -5,7 +5,8 @@ export const runtime = 'edge';
 
 export async function GET(req: NextRequest) {
     try {
-        console.log("Test Email Route Triggered");
+        console.log("Test Email Route Triggered - Production Check");
+        console.log("Checking Environment Config...");
 
         const key = process.env.BREVO_API_KEY;
         const keyStatus = key ? `Present (starts with ${key.substring(0, 5)}...)` : "Missing";
