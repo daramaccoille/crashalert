@@ -18,10 +18,10 @@ export async function GET(req: NextRequest) {
             "<h1>This is a test from the Next.js App</h1><p>If you see this, the web app can send emails.</p>"
         );
 
-        if (result) {
+        if (result.success) {
             return NextResponse.json({ success: true, message: "Email sent successfully", keyStatus });
         } else {
-            return NextResponse.json({ success: false, error: "Email function returned false. Check server logs.", keyStatus }, { status: 500 });
+            return NextResponse.json({ success: false, error: result.error || "Email function failed", keyStatus }, { status: 500 });
         }
     } catch (e: any) {
         return NextResponse.json({ error: e.message }, { status: 500 });

@@ -76,11 +76,11 @@ export async function POST(req: NextRequest) {
                         </div>
                     `;
 
-                    const emailSent = await sendEmail(email, "Your CrashAlert Account Access", welcomeHtml);
-                    if (emailSent) {
+                    const emailResult = await sendEmail(email, "Your CrashAlert Account Access", welcomeHtml);
+                    if (emailResult.success) {
                         console.log(`Welcome email sent to ${email}`);
                     } else {
-                        console.error(`Failed to send welcome email to ${email}`);
+                        console.error(`Failed to send welcome email to ${email}: ${emailResult.error}`);
                     }
 
                 } catch (dbError) {
