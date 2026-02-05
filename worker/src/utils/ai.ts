@@ -2,7 +2,7 @@ import { Env } from '../index';
 import { MarketData } from '../market';
 
 export async function generateMarketSentiment(data: MarketData, env: Env): Promise<string> {
-    const apiKey = env.GEMINI_KEY;
+    const apiKey = env.GEMINI_KEY?.trim();
     if (!apiKey) {
         console.warn("GEMINI_KEY missing, skipping sentiment generation.");
         return "Market sentiment analysis currently unavailable.";
@@ -32,7 +32,8 @@ export async function generateMarketSentiment(data: MarketData, env: Env): Promi
         });
 
         if (!response.ok) {
-            throw new Error(`Gemini API Error: ${response.statusText}`);
+            const errorBody = await response.text();
+            throw new Error(`Gemini API Error: ${response.status} ${response.statusText} - ${errorBody}`);
         }
 
         const json: any = await response.json();
