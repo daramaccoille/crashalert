@@ -56,7 +56,7 @@ export default {
                 // Test Email Send - Send a sample Pro email to admin
                 const sampleHtml = getProEmailHtml(data);
                 const emailResult = await sendEmail(
-                    "dara@crashalert.online",
+                    "noreply@crashalert.online",
                     "CrashAlert Update Test",
                     sampleHtml,
                     env
