@@ -76,6 +76,11 @@ export default {
 
     async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
         console.log("Cron triggered at", new Date().toISOString());
+
+        // Validation
+        if (!env.BREVO_API_KEY) console.error("CRITICAL: BREVO_API_KEY is missing/undefined");
+        if (!env.DATABASE_URL) console.error("CRITICAL: DATABASE_URL is missing/undefined");
+
         try {
             const data = await fetchMarketData(env);
             console.log("Market Data Fetched:", JSON.stringify(data));
@@ -119,18 +124,25 @@ export default {
             console.log(`Found ${activeSubscribers.length} active subscribers.`);
 
             // Pre-generate chart for Expert/Advanced users (reused to save API calls if same content)
-            // Using last 30 days of SPY history.
-            const chartData = data.spyHistory.slice(0, 30).reverse(); // specific slice
-            // Prediction mock: current price +/- 5% based on VIX
-            const prediction = chartData[chartData.length - 1] * (1 + (data.oneMonthAhead / 100));
+            let globalChartUrl = "";
+            if (data.spyHistory && data.spyHistory.length > 0) {
+                const chartData = data.spyHistory.slice(0, 30).reverse(); // specific slice
+                if (chartData.length > 0) {
+                    // Prediction mock: current price +/- 5% based on VIX
+                    const lastVal = chartData[chartData.length - 1];
+                    const prediction = lastVal * (1 + (data.oneMonthAhead / 100));
 
-            const globalChartUrl = generateTrendChartUrl(
-                'S&P 500 Trend',
-                chartData,
-                prediction,
-                chartData[chartData.length - 1] * 1.05, // Upper Bound
-                chartData[chartData.length - 1] * 0.95  // Lower Bound
-            );
+                    globalChartUrl = generateTrendChartUrl(
+                        'S&P 500 Trend',
+                        chartData,
+                        prediction,
+                        lastVal * 1.05, // Upper Bound
+                        lastVal * 0.95  // Lower Bound
+                    );
+                }
+            } else {
+                console.warn("No SPY history available, skipping chart.");
+            }
 
             for (const sub of activeSubscribers) {
                 let html = '';
