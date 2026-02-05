@@ -38,6 +38,7 @@ export default {
 
                     oneMonthAhead: data.oneMonthAhead.toFixed(2),
                     marketMode: data.marketMode,
+                    sentiment: "Manual Trigger - Sentiment Skipped",
                     // Scores
                     vixScore: data.vixScore,
                     yieldSpreadScore: data.yieldSpreadScore,
