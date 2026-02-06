@@ -8,8 +8,8 @@ export async function sendEmail(
 
     // Sender configuration - using dara@crashalert.online as it's likely the verified sender
     const sender = {
-        name: "CrashAlert",
-        email: "dara@crashalert.online"
+        name: "Crash Alert",
+        email: "noreply@crashalert.online"
     };
 
     const body = {
