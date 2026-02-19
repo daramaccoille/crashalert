@@ -55,7 +55,7 @@ export default {
                 });
 
                 // Test Email Send - Send a sample Pro email to admin if configured
-                let emailResult = { success: false, error: "ADMIN_EMAIL not configured" };
+                let emailResult: { success: boolean; error?: string } = { success: false, error: "ADMIN_EMAIL not configured" };
 
                 if (env.ADMIN_EMAIL) {
                     const sampleHtml = getProEmailHtml(data);
