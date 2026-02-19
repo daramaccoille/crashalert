@@ -2,7 +2,7 @@
 const https = require('https');
 
 // Use env var or fallback (for test)
-const API_KEY = process.env.GEMINI_KEY || 'AIzaSyA72YynroPB74ro6g5qoS7UWg9_lzx2Vcc';
+const API_KEY = process.env.GEMINI_KEY ;
 
 async function testModel(modelName) {
     console.log(`\n--- Testing Model: ${modelName} ---`);
