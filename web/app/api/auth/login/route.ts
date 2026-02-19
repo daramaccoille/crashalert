@@ -34,10 +34,14 @@ export async function POST(req: NextRequest) {
 
         const response = NextResponse.json({ success: true, plan: user.plan });
 
+        // Generate signed session token
+        const { sign, getSecret } = await import('@/lib/session');
+        const token = await sign(email, getSecret());
+
         // Set secure cookie
-        response.cookies.set('crashalert-user', email, {
+        response.cookies.set('crashalert-user', token, {
             path: '/',
-            httpOnly: false, // Accessible to clientJS as per current implementation mock, strict would use httpOnly
+            httpOnly: false, // Keeping accessible to clientJS but signed
             maxAge: 86400,
             secure: process.env.NODE_ENV === 'production'
         });

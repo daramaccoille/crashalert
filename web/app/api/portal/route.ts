@@ -19,7 +19,13 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const email = authCookie.value;
+        // Verify signed token
+        const { verify, getSecret } = await import('@/lib/session');
+        const email = await verify(authCookie.value, getSecret());
+
+        if (!email) {
+            return NextResponse.json({ error: "Invalid session" }, { status: 401 });
+        }
 
         // Get user from DB to retrieve stripeId
         const user = await db.query.subscribers.findFirst({

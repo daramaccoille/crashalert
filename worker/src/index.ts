@@ -14,6 +14,7 @@ export interface Env {
     GEMINI_KEY: string;
     FRED_KEY: string;
     AV_KEY: string;
+    ADMIN_EMAIL?: string; // Optional for testing
 }
 
 export default {
@@ -53,14 +54,20 @@ export default {
                     rawJson: data
                 });
 
-                // Test Email Send - Send a sample Pro email to admin
-                const sampleHtml = getProEmailHtml(data);
-                const emailResult = await sendEmail(
-                    "metaldetectorsonline1@gmail.com",
-                    "CrashAlert Update Test",
-                    sampleHtml,
-                    env
-                );
+                // Test Email Send - Send a sample Pro email to admin if configured
+                let emailResult = { success: false, error: "ADMIN_EMAIL not configured" };
+
+                if (env.ADMIN_EMAIL) {
+                    const sampleHtml = getProEmailHtml(data);
+                    emailResult = await sendEmail(
+                        env.ADMIN_EMAIL,
+                        "CrashAlert Update Test",
+                        sampleHtml,
+                        env
+                    );
+                } else {
+                    console.log("Skipping test email: ADMIN_EMAIL not set");
+                }
 
                 return new Response(JSON.stringify({
                     success: true,
@@ -145,28 +152,44 @@ export default {
                 console.warn("No SPY history available, skipping chart.");
             }
 
-            for (const sub of activeSubscribers) {
-                let html = '';
-                try {
-                    switch (sub.plan) {
-                        case 'expert':
-                        case 'advanced':
-                            html = getExpertEmailHtml(data, globalChartUrl);
-                            break;
-                        case 'pro':
-                            html = getProEmailHtml(data);
-                            break;
-                        case 'basic':
-                        default:
-                            html = getBasicEmailHtml(data);
-                            break;
-                    }
+            // Batch Sending Logic
+            const BATCH_SIZE = 20;
+            let successCount = 0;
+            let failCount = 0;
 
-                    await sendEmail(sub.email, "Daily Market Risk Report", html, env);
-                } catch (err) {
-                    console.error(`Failed to email ${sub.email}:`, err);
-                }
+            for (let i = 0; i < activeSubscribers.length; i += BATCH_SIZE) {
+                const batch = activeSubscribers.slice(i, i + BATCH_SIZE);
+                console.log(`Processing batch ${i / BATCH_SIZE + 1} of ${Math.ceil(activeSubscribers.length / BATCH_SIZE)}`);
+
+                const results = await Promise.all(batch.map(async (sub) => {
+                    try {
+                        let html = '';
+                        switch (sub.plan) {
+                            case 'expert':
+                            case 'advanced':
+                                html = getExpertEmailHtml(data, globalChartUrl);
+                                break;
+                            case 'pro':
+                                html = getProEmailHtml(data);
+                                break;
+                            case 'basic':
+                            default:
+                                html = getBasicEmailHtml(data);
+                                break;
+                        }
+                        await sendEmail(sub.email, "Daily Market Risk Report", html, env);
+                        return true;
+                    } catch (err) {
+                        console.error(`Failed to email ${sub.email}:`, err);
+                        return false;
+                    }
+                }));
+
+                successCount += results.filter(r => r).length;
+                failCount += results.filter(r => !r).length;
             }
+
+            console.log(`Email run complete. Sent: ${successCount}, Failed: ${failCount}`);
 
         } catch (e) {
             console.error("Cron failed:", e);

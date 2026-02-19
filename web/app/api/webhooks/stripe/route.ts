@@ -9,9 +9,17 @@ import bcrypt from 'bcryptjs';
 export const runtime = 'edge';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: '2026-01-28.clover', // Updated to match SDK types
+    apiVersion: '2026-01-28.clover',
     typescript: true,
 });
+
+// Map Stripe Price IDs to internal Plan names
+// To be effective, these ENV vars must be set in Cloudflare/Vercel
+const PRICE_ID_MAP: Record<string, string> = {
+    [process.env.STRIPE_PRICE_BASIC || 'price_basic_placeholder']: 'basic',
+    [process.env.STRIPE_PRICE_PRO || 'price_pro_placeholder']: 'pro',
+    [process.env.STRIPE_PRICE_EXPERT || 'price_expert_placeholder']: 'expert',
+};
 
 export async function POST(req: NextRequest) {
     const body = await req.text();
@@ -95,16 +103,26 @@ export async function POST(req: NextRequest) {
             const subscription = event.data.object as Stripe.Subscription;
             const stripeCustomerId = subscription.customer as string;
             const status = subscription.status;
-            // Check if metadata has plan info (it should carry over from checkout if configured properly)
-            // or we just trust the status update.
-            const planType = subscription.metadata?.plan;
 
-            console.log(`Subscription updated for ${stripeCustomerId} - Status: ${status}`);
+            // Determine Plan from Price ID (more robust than metadata)
+            let planType = subscription.metadata?.plan;
+
+            if (subscription.items && subscription.items.data.length > 0) {
+                const priceId = subscription.items.data[0].price.id;
+                // Check if we have a direct mapping
+                if (PRICE_ID_MAP[priceId]) {
+                    planType = PRICE_ID_MAP[priceId];
+                }
+                // Fallback: Check if the product metadata has the plan name (if configured in Stripe)
+                // This would require an extra API call which we want to avoid in a webhook if possible,
+                // but we can trust the metadata if it exists on the subscription object as a fallback.
+            }
+
+            console.log(`Subscription updated for ${stripeCustomerId} - Status: ${status}, Plan: ${planType}`);
 
             try {
-                // If the status is active, we ensure they are active.
-                // If past_due, unpaid, or canceled, we might want to deactivate.
-                const isActive = status === 'active';
+                // Active statuses: active, trialing
+                const isActive = status === 'active' || status === 'trialing';
 
                 const updateData: any = { active: isActive };
                 if (planType) updateData.plan = planType;
