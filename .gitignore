@@ -5,7 +5,7 @@ node_modules/
 
 # Testing
 coverage/
-
+test-gemini.js
 # Next.js
 .next/
 out/
