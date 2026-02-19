@@ -16,9 +16,9 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 // Map Stripe Price IDs to internal Plan names
 // To be effective, these ENV vars must be set in Cloudflare/Vercel
 const PRICE_ID_MAP: Record<string, string> = {
-    [process.env.STRIPE_PRICE_BASIC || 'price_basic_placeholder']: 'basic',
-    [process.env.STRIPE_PRICE_PRO || 'price_pro_placeholder']: 'pro',
-    [process.env.STRIPE_PRICE_EXPERT || 'price_expert_placeholder']: 'expert',
+    [process.env.CRASH_ALERT_PRICE_ID_BASIC || 'basic_placeholder']: 'basic',
+    [process.env.CRASH_ALERT_PRICE_ID_PRO || 'pro_placeholder']: 'pro',
+    [process.env.CRASH_ALERT_PRICE_ID_ADVANCED || 'expert_placeholder']: 'expert',
 };
 
 export async function POST(req: NextRequest) {

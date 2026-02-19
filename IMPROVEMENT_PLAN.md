@@ -37,5 +37,7 @@
     *   **Files Updated:** `lib/session.ts` (created), `api/auth/login`, `api/portal`.
 
 ## 4. Next Steps / To Do
-*   **Environment Variables:** Add `ADMIN_EMAIL`, `AUTH_SECRET` (optional, falls back if missing), and Stripe Price IDs (`STRIPE_PRICE_BASIC`, etc.) to Cloudflare/Vercel dashboard.
+*   **Environment Variables:**
+    *   **Worker:** Check `ADMIN_EMAIL`.
+    *   **Web App:** Verified `CRASH_ALERT_PRICE_ID_BASIC`, `_PRO`, `_ADVANCED` are set. Ensures `AUTH_SECRET` is set (or relies on fallback).
 *   **Testing:** Verify the full flow (Login -> Dashboard -> Portal -> Upgrade -> Email).
