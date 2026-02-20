@@ -25,7 +25,12 @@ export default {
             try {
                 const data = await fetchMarketData(env);
 
-                // Save to DB
+                // 1. Generate Sentiment
+                const sentiment = await generateMarketSentiment(data, env);
+                console.log("DEBUG: Final Sentiment for Email:", sentiment);
+                data.sentiment = sentiment;
+
+                // 2. Save to DB
                 const db = getDb(env.DATABASE_URL);
                 await db.insert(marketMetrics).values({
                     vix: data.vix.toFixed(2),
@@ -39,7 +44,7 @@ export default {
 
                     oneMonthAhead: data.oneMonthAhead.toFixed(2),
                     marketMode: data.marketMode,
-                    sentiment: await generateMarketSentiment(data, env),
+                    sentiment: sentiment,
                     // Scores
                     vixScore: data.vixScore,
                     yieldSpreadScore: data.yieldSpreadScore,
@@ -54,10 +59,11 @@ export default {
                     rawJson: data
                 });
 
-                // Test Email Send - Send a sample Pro email to admin if configured
+                // 3. Test Email Send - Send a sample Pro email to admin if configured
                 let emailResult: { success: boolean; error?: string } = { success: false, error: "ADMIN_EMAIL not configured" };
 
                 if (env.ADMIN_EMAIL) {
+                    // This will now use the data.sentiment we assigned above
                     const sampleHtml = getProEmailHtml(data);
                     emailResult = await sendEmail(
                         env.ADMIN_EMAIL,
@@ -95,6 +101,7 @@ export default {
 
             // 0. AI Sentiment
             const sentiment = await generateMarketSentiment(data, env);
+            console.log("DEBUG: Generated Sentiment:", sentiment);
             data.sentiment = sentiment;
 
             // 1. Save to DB
