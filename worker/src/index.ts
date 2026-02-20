@@ -1,5 +1,5 @@
 import { fetchMarketData } from './market';
-import { generateTrendChartUrl, generateExpertRiskChartUrl } from './utils/charts';
+import { generateTrendChartUrl, generateExpertRiskChartUrl, generateMetricChartUrl } from './utils/charts';
 import { generateMarketSentiment } from './utils/ai';
 import { sendEmail } from './utils/email';
 import { getDb } from './db';
@@ -69,13 +69,14 @@ export default {
                     let globalChartUrl = "";
 
                     try {
-                        const riskHistoryResults = await db.select({ score: marketMetrics.aggregateRiskScore })
+                        const history = await db.select()
                             .from(marketMetrics)
                             .orderBy(desc(marketMetrics.createdAt))
                             .limit(30);
-                        const scores = riskHistoryResults.map(r => r.score || 0).reverse();
-                        if (scores.length === 0) scores.push(data.aggregateRiskScore);
-                        expertRiskChartUrl = generateExpertRiskChartUrl(scores);
+
+                        const riskScores = history.map(r => r.aggregateRiskScore || 0).reverse();
+                        if (riskScores.length === 0) riskScores.push(data.aggregateRiskScore);
+                        expertRiskChartUrl = generateExpertRiskChartUrl(riskScores);
 
                         if (data.spyHistory && data.spyHistory.length > 0) {
                             const lastVal = data.spyHistory[0];
@@ -84,10 +85,33 @@ export default {
                         }
                     } catch (e) { console.error("Chart generation failed for test", e); }
 
+                    // Generate 9 indicator charts for Expert test
+                    const metricCharts: Record<string, string> = {};
+                    try {
+                        const history = await db.select().from(marketMetrics).orderBy(desc(marketMetrics.createdAt)).limit(30);
+                        const metrics = [
+                            { label: 'VIX', key: 'vix' as const },
+                            { label: 'Spread', key: 'yieldSpread' as const },
+                            { label: 'P/E', key: 'sp500pe' as const },
+                            { label: 'Liquidity', key: 'liquidity' as const },
+                            { label: 'Junk', key: 'junkBondSpread' as const },
+                            { label: 'Debt', key: 'marginDebt' as const },
+                            { label: 'Insider', key: 'insiderActivity' as const },
+                            { label: 'Macro', key: 'cfnai' as const },
+                            { label: 'Signal', key: 'oneMonthAhead' as const }
+                        ];
+
+                        metrics.forEach(m => {
+                            const values = history.map(h => Number(h[m.key]) || 0).reverse();
+                            if (values.length === 0) values.push(Number(data[m.key as keyof typeof data]) || 0);
+                            metricCharts[m.label] = generateMetricChartUrl(values);
+                        });
+                    } catch (e) { console.error("Indicator charts failed", e); }
+
                     const tests = [
                         { name: "Basic", html: getBasicEmailHtml(data) },
                         { name: "Pro", html: getProEmailHtml(data) },
-                        { name: "Expert", html: getExpertEmailHtml(data, globalChartUrl, expertRiskChartUrl) }
+                        { name: "Expert", html: getExpertEmailHtml(data, globalChartUrl, expertRiskChartUrl, metricCharts) }
                     ];
 
                     for (const test of tests) {
@@ -184,22 +208,36 @@ export default {
                 console.warn("No SPY history available, skipping chart.");
             }
 
-            // Expert Risk Chart History
+            // Expert Visuals (Risk Trend + 9 Indicators)
             let expertRiskChartUrl = "";
+            const metricCharts: Record<string, string> = {};
             try {
-                const riskHistoryResults = await db.select({ score: marketMetrics.aggregateRiskScore })
-                    .from(marketMetrics)
-                    .orderBy(desc(marketMetrics.createdAt))
-                    .limit(30);
+                const history = await db.select().from(marketMetrics).orderBy(desc(marketMetrics.createdAt)).limit(30);
 
-                // Extract scores and ensure the current one is included at the end
-                const scores = riskHistoryResults.map(r => r.score || 0).reverse();
-                // If this is the very first run, history might be empty, so at least show current
-                if (scores.length === 0) scores.push(data.aggregateRiskScore);
+                // 1. Risk Trend Chart
+                const riskScores = history.map(h => h.aggregateRiskScore || 0).reverse();
+                if (riskScores.length === 0) riskScores.push(data.aggregateRiskScore);
+                expertRiskChartUrl = generateExpertRiskChartUrl(riskScores);
 
-                expertRiskChartUrl = generateExpertRiskChartUrl(scores);
+                // 2. 9 Individual Indicator Sparklines
+                const metrics = [
+                    { label: 'VIX', key: 'vix' as const },
+                    { label: 'Spread', key: 'yieldSpread' as const },
+                    { label: 'P/E', key: 'sp500pe' as const },
+                    { label: 'Liquidity', key: 'liquidity' as const },
+                    { label: 'Junk', key: 'junkBondSpread' as const },
+                    { label: 'Debt', key: 'marginDebt' as const },
+                    { label: 'Insider', key: 'insiderActivity' as const },
+                    { label: 'Macro', key: 'cfnai' as const },
+                    { label: 'Signal', key: 'oneMonthAhead' as const }
+                ];
+                metrics.forEach(m => {
+                    const values = history.map(h => Number(h[m.key]) || 0).reverse();
+                    if (values.length === 0) values.push(Number(data[m.key as keyof typeof data]) || 0);
+                    metricCharts[m.label] = generateMetricChartUrl(values);
+                });
             } catch (e) {
-                console.error("Failed to generate Expert Risk Chart:", e);
+                console.error("Failed to generate Expert visuals:", e);
             }
 
             // Batch Sending Logic
@@ -217,7 +255,7 @@ export default {
                         switch (sub.plan) {
                             case 'expert':
                             case 'advanced':
-                                html = getExpertEmailHtml(data, globalChartUrl, expertRiskChartUrl);
+                                html = getExpertEmailHtml(data, globalChartUrl, expertRiskChartUrl, metricCharts);
                                 break;
                             case 'pro':
                                 html = getProEmailHtml(data);

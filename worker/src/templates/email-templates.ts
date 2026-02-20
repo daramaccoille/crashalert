@@ -121,6 +121,17 @@ function generateMetricRow(label: string, value: string | number, score: number,
     `;
 }
 
+// Subscription Management Section
+function generateSubscriptionLinks(email: string) {
+  return `
+    <div style="text-align: center; margin-top: 24px; font-size: 12px; color: #999;">
+      <a href="https://crashalert.online/dashboard" style="color: #666; text-decoration: underline;">Manage Subscription</a>
+      <span style="margin: 0 10px;">•</span>
+      <a href="https://crashalert.online/dashboard" style="color: #666; text-decoration: underline;">Cancel Alert</a>
+    </div>
+  `;
+}
+
 // --- Email Templates ---
 
 export function getBasicEmailHtml(data: MarketData): string {
@@ -154,6 +165,8 @@ export function getBasicEmailHtml(data: MarketData): string {
             <p style="font-size: 13px; color: #666; margin-bottom: 16px;">Get all 9 risk indicators, heatmapped data, and the Expert Risk Graph.</p>
             <a href="https://crashalert.online/dashboard" style="${buttonStyle}">View Plans</a>
           </div>
+          
+          ${generateSubscriptionLinks('')}
         </div>
   
         <div style="${footerStyle}">
@@ -184,7 +197,7 @@ export function getProEmailHtml(data: MarketData): string {
           ` : ''}
 
           <div style="${cardStyle}">
-            <h3 style="margin: 0 0 16px; font-size: 12px; text-transform: uppercase; color: #888; letter-spacing: 1px; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px;">Indicator Heatmap</h3>
+            <h3 style="margin: 0 0 16px; font-size: 12px; text-transform: uppercase; color: #888; letter-spacing: 1px; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px;">Indicator Heatmap (Standard Order)</h3>
             ${generateMetricRow('VIX', data.vix.toFixed(2), data.vixScore, true)}
             ${generateMetricRow('Yield Spread', data.yieldSpread.toFixed(2), data.yieldSpreadScore, true)}
             ${generateMetricRow('S&P 500 P/E', data.sp500pe.toFixed(2), data.sp500peScore, true)}
@@ -196,9 +209,7 @@ export function getProEmailHtml(data: MarketData): string {
             ${generateMetricRow('1-Month Forecast', data.oneMonthAhead.toFixed(2), data.oneMonthAheadScore, true)}
           </div>
 
-          <div style="text-align: center; margin-top: 32px;">
-            <a href="https://crashalert.online/dashboard" style="${buttonStyle}">Manage Dashboard</a>
-          </div>
+          ${generateSubscriptionLinks('')}
         </div>
 
         <div style="${footerStyle}">
@@ -209,7 +220,7 @@ export function getProEmailHtml(data: MarketData): string {
   `;
 }
 
-export function getExpertEmailHtml(data: MarketData, spyChartUrl: string, riskChartUrl: string): string {
+export function getExpertEmailHtml(data: MarketData, spyChartUrl: string, riskChartUrl: string, metricCharts: Record<string, string>): string {
   const riskColor = getScoreColor(data.aggregateRiskScore >= 5 ? 2 : (data.aggregateRiskScore >= 3 ? 1 : 0));
 
   const eventRows = data.upcomingEvents.map(event => `
@@ -220,6 +231,40 @@ export function getExpertEmailHtml(data: MarketData, spyChartUrl: string, riskCh
       </span>
     </div>
   `).join('');
+
+  // S&P Projection section - handle missing chartUrl
+  const projectionSection = `
+    <div style="${cardStyle}">
+      <h3 style="margin: 0 0 12px; font-size: 12px; text-transform: uppercase; color: #888; letter-spacing: 1px;">S&P 500 Market Projection</h3>
+      ${spyChartUrl ? `<img src="${spyChartUrl}" alt="Price Forecast" style="width:100%; border-radius: 4px;" />` : `<div style="padding: 40px; background: #fafafa; text-align: center; color: #999; border: 1px dashed #ddd;">Projection calibrating...</div>`}
+    </div>
+  `;
+
+  // All 9 Metric Charts in a grid
+  const chartItems = Object.entries(metricCharts).map(([label, url]) => `
+    <div style="display: inline-block; width: 30%; margin: 1%; vertical-align: top; border: 1px solid #f0f0f0; border-radius: 4px; background: #fff;">
+      <div style="padding: 4px; font-size: 9px; font-weight: bold; color: #888; border-bottom: 1px solid #f0f0f0; background: #fafafa; white-space: nowrap; overflow: hidden;">${label}</div>
+      <img src="${url}" style="width: 100%; display: block;" />
+    </div>
+  `).join('');
+
+  // Sorted Metrics Terminal (Risk First)
+  const metricsList = [
+    { label: 'VIX', value: data.vix.toFixed(2), score: data.vixScore },
+    { label: 'Yield Spread', value: data.yieldSpread.toFixed(2), score: data.yieldSpreadScore },
+    { label: 'S&P 500 P/E', value: data.sp500pe.toFixed(2), score: data.sp500peScore },
+    { label: 'Liquidity', value: '$' + data.liquidity.toFixed(2) + 'T', score: data.liquidityScore },
+    { label: 'Junk Bond Spread', value: data.junkBondSpread.toFixed(2) + '%', score: data.junkBondSpreadScore },
+    { label: 'Margin Debt', value: data.marginDebt.toFixed(2), score: data.marginDebtScore },
+    { label: 'Insider Activity', value: data.insiderActivity.toFixed(2), score: data.insiderActivityScore },
+    { label: 'CFNAI', value: data.cfnai.toFixed(2), score: data.cfnaiScore },
+    { label: 'Algorithm Forecast', value: data.oneMonthAhead.toFixed(2), score: data.oneMonthAheadScore },
+  ];
+
+  const sortedRows = metricsList
+    .sort((a, b) => b.score - a.score)
+    .map(m => generateMetricRow(m.label, m.value, m.score, true))
+    .join('');
 
   return `
     <div style="${cleanStyle}">
@@ -242,17 +287,20 @@ export function getExpertEmailHtml(data: MarketData, spyChartUrl: string, riskCh
           <div style="${cardStyle}">
             <h3 style="margin: 0 0 16px; font-size: 12px; text-transform: uppercase; color: #888; letter-spacing: 1px;">Expert Risk Trend (30D)</h3>
             <img src="${riskChartUrl}" alt="Risk Trend Graph" style="width:100%; border-radius: 4px;" />
-            <div style="margin-top: 8px; font-size: 11px; color: #999; text-align: center;">Threshold crossing 5.0 signals high potential for crash events.</div>
+          </div>
+
+          ${projectionSection}
+
+          <div style="${cardStyle}">
+            <h3 style="margin: 0 0 12px; font-size: 12px; text-transform: uppercase; color: #888; letter-spacing: 1px;">Multi-Indicator Visuals</h3>
+            <div style="text-align: center;">
+              ${chartItems}
+            </div>
           </div>
 
           <div style="${cardStyle} background: #fafafa;">
-             <h3 style="margin: 0 0 12px; font-size: 12px; text-transform: uppercase; color: #888; letter-spacing: 1px;">Upcoming Data Events</h3>
+             <h3 style="margin: 0 0 12px; font-size: 12px; text-transform: uppercase; color: #888; letter-spacing: 1px;">Forthcoming Events</h3>
              ${eventRows}
-          </div>
-
-          <div style="${cardStyle}">
-            <h3 style="margin: 0 0 12px; font-size: 12px; text-transform: uppercase; color: #888; letter-spacing: 1px;">S&P 500 Market Projection</h3>
-            <img src="${spyChartUrl}" alt="Price Forecast" style="width:100%; border-radius: 4px;" />
           </div>
 
           <div style="background: #fdfcf5; padding: 20px; border-radius: 8px; border: 1px solid #D4AF37; margin-bottom: 24px;">
@@ -261,14 +309,11 @@ export function getExpertEmailHtml(data: MarketData, spyChartUrl: string, riskCh
           </div>
 
           <div style="${cardStyle}">
-            <h3 style="margin: 0 0 16px; font-size: 12px; text-transform: uppercase; color: #888;">Full Metrics Terminal</h3>
-            ${generateMetricRow('VIX', data.vix.toFixed(2), data.vixScore, true)}
-            ${generateMetricRow('Yield Spread', data.yieldSpread.toFixed(2), data.yieldSpreadScore, true)}
-            ${generateMetricRow('Liquidity', '$' + data.liquidity.toFixed(2) + 'T', data.liquidityScore, true)}
-            ${generateMetricRow('Insider Buy/Sell', data.insiderActivity.toFixed(2), data.insiderActivityScore, true)}
-            ${generateMetricRow('Algorithm Forecast', data.oneMonthAhead.toFixed(2), data.oneMonthAheadScore, true)}
+            <h3 style="margin: 0 0 16px; font-size: 12px; text-transform: uppercase; color: #888; letter-spacing: 1px; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px;">Sorted Risk Terminal (Risky First)</h3>
+            ${sortedRows}
           </div>
 
+          ${generateSubscriptionLinks('')}
         </div>
 
         <div style="${footerStyle}">

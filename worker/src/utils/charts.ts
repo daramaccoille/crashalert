@@ -91,7 +91,42 @@ export function generateTrendChartUrl(
     };
 
     // Encode URL
-    return `${baseUrl}?c=${encodeURIComponent(JSON.stringify(config))}&backgroundColor=transparant&width=500&height=300&format=png`;
+    return `${baseUrl}?c=${encodeURIComponent(JSON.stringify(config))}&backgroundColor=transparent&width=500&height=300&format=png`;
+}
+
+export function generateMetricChartUrl(
+    history: number[],
+    color: string = 'rgb(212, 175, 55)'
+): string {
+    const baseUrl = "https://quickchart.io/chart";
+    const labels = history.map((_, i) => i);
+
+    const config = {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    data: history,
+                    borderColor: color,
+                    borderWidth: 2,
+                    fill: false,
+                    pointRadius: 0,
+                    tension: 0.1
+                }
+            ]
+        },
+        options: {
+            maintainAspectRatio: false,
+            legend: { display: false },
+            scales: {
+                xAxes: [{ display: false }],
+                yAxes: [{ display: false }]
+            }
+        }
+    };
+
+    return `${baseUrl}?c=${encodeURIComponent(JSON.stringify(config))}&backgroundColor=transparent&width=150&height=50&format=png`;
 }
 
 export function generateExpertRiskChartUrl(
