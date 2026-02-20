@@ -106,7 +106,7 @@ export async function fetchMarketData(env: Env): Promise<MarketData> {
         else if (bearScore > bullScore) marketMode = 'BEAR';
     }
 
-    return {
+    const data: MarketData = {
         vix: currentVix,
         yieldSpread: spread,
         sp500pe: 27.5, // Mocked for now, hard to get free real-time PE
