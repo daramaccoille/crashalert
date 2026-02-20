@@ -1,43 +1,42 @@
-# CrashAlert Improvement Plan & Status
+# CrashAlert Improvement Plan: Daily Email Product
 
-## 1. Missed Functionality & Stripe Integration
-**Objective:** Ensure seamless subscription management (Upgrade, Downgrade, Cancel) and robust syncing with the database.
+## 1. Value Tier Refinement (The Emails)
+**Objective:** Create clear differentiation between subscription levels to drive upgrades.
 
-*   **[IMPLEMENTED] Email Upgrade Links:**
-    *   Added "Manage Subscription" links to `Pro` and `Expert` email templates.
-    *   Links direct users to the dashboard where the portal button is located.
-*   **[IMPLEMENTED] Stripe Webhook Robustness (`customer.subscription.updated`):**
-    *   Now identifies plans via `price.id` (checking `STRIPE_PRICE_BASIC`, etc.) with fallback to metadata.
-    *   Refactored to avoid stale metadata issues during portal upgrades.
-*   **[Verified] Cancellation Handling:**
-    *   `customer.subscription.deleted` sets `active = false`.
+### A. Basic Tier ("The Hook")
+*   **Focus:** Core sentiment and urgency.
+*   **Content:** 
+    *   Large "Market Mode" indicator (Bull/Bear).
+    *   High-level metrics only (VIX, Yield Spread, Liquidity).
+    *   **Teaser Logic:** Truncate AI Insights with a "Read full analysis" button.
+    *   **CTA:** Prominent "Upgrade to Pro" section with feature comparison.
 
-## 2. Daily Email Improvements
-**Objective:** Enhance the value and readability of the daily reports.
+### B. Pro Tier ("The Dashboard")
+*   **Focus:** Comprehensive data and professional aesthetics.
+*   **Content:**
+    *   Full list of 9 key risk indicators.
+    *   **Visual Enhancements:** Implement a heatmapped metric table.
+        *   `Green` (Safe), `Amber` (Caution), `Red` (Critical Risk).
+    *   **Full AI Analyst:** Complete Gemini-generated strategic summary.
+    *   **Brief Explanations:** Include the "Norms" 1-liners for all metrics.
 
-*   **[IMPLEMENTED] Layout & Aesthetics:**
-    *   Refined the email CSS for a cleaner, gold/premium look.
-    *   Implemented a consistent header style with `metricInfo` descriptions.
-*   **[IMPLEMENTED] Indicator Explanations:**
-    *   Added concise (1-sentence) explanations for each metric (e.g., "VIX: Expected volatility. >20 signals fear.").
-*   **[IMPLEMENTED] Content Structure:**
-    *   **Basic:** Teaser focus + Upgrade CTA.
-    *   **Pro:** Full metrics list + AI nuances + Manage Link.
-    *   **Expert:** Deep dive + Charts + AI Strategy + Manage Link.
+### C. Expert Tier ("The Intelligence Suite")
+*   **Focus:** Visual trends and predictive timing.
+*   **Content:**
+    *   **Expert Risk Graph:** A 30-day trendline showing the "Aggregate Risk Score" (sum of all individual scores).
+        *   *Visual Milestone:* Highlight when the aggregate hits 5+ (Critical Warning Zone).
+    *   **Strategic Forecast:** Enhanced projection chart.
+    *   **Event Tracker:** "Next Signal Changes" section.
+        *   *Example:* "S&P 500 P/E next update: 2 days," "CFNAI release: Monday."
 
-## 3. Codebase & Performance Improvements
-**Objective:** Optimize the Worker and Web App for reliability and scale.
+## 2. Technical Enhancements
+*   **Aggregate Risk Calculation:** Add logic in the worker to calculate a normalized 0-10 Risk Score for the Expert graph.
+*   **Event Data Logic:** Implement a utility to track and predict FRED/S&P data release cycles to populate the "Event Tracker."
+*   **Email Design System:** Move shared CSS and "Heatmap" logic into a dedicated style utility for consistency.
 
-*   **[IMPLEMENTED] Worker Optimization (`worker/src/index.ts`):**
-    *   **Batch Email Sending:** Implemented `Promise.all` with chunking (size 20) to prevent timeouts.
-    *   **Hardcoded Values:** Removed test email; now uses `ADMIN_EMAIL` env var if present.
-*   **[CRITICAL FIX] Security Vulnerability:**
-    *   **Issue:** The authentication cookie `crashalert-user` was storing the user's email in plain text without a signature. This allowed potential impersonation by modifying the cookie.
-    *   **Fix:** Implemented HMAC-SHA256 signing for the session cookie.
-    *   **Files Updated:** `lib/session.ts` (created), `api/auth/login`, `api/portal`.
+## 3. Visual Verification
+*   **Web Portal Sync:** Ensure the Stripe Portal mockups match these new tiers (features correctly listed under Basic/Pro/Expert).
+*   **Local Preview Tool:** Create a `/preview` route in the worker to view each email tier in the browser instantly.
 
-## 4. Next Steps / To Do
-*   **Environment Variables:**
-    *   **Worker:** Check `ADMIN_EMAIL`.
-    *   **Web App:** Verified `CRASH_ALERT_PRICE_ID_BASIC`, `_PRO`, `_ADVANCED` are set. Ensures `AUTH_SECRET` is set (or relies on fallback).
-*   **Testing:** Verify the full flow (Login -> Dashboard -> Portal -> Upgrade -> Email).
+---
+**Next Step:** Implement the "Aggregate Risk" logic and update the Expert Email template with a trend chart.

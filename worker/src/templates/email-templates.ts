@@ -105,12 +105,13 @@ function generateCommonHeader(title: string) {
     `;
 }
 
-function generateMetricRow(label: string, value: string | number, score: number) {
+function generateMetricRow(label: string, value: string | number, score: number, showHeatmap: boolean = false) {
   const color = getScoreColor(score);
   const info = metricInfo[label] || '';
+  const bgColor = showHeatmap ? `${color}15` : 'transparent'; // 15 = roughly 8% opacity
 
   return `
-      <div style="border-bottom: 1px solid #f0f0f0; padding: 12px 0;">
+      <div style="border-bottom: 1px solid #f0f0f0; padding: 12px; background-color: ${bgColor}; border-radius: 4px; margin-bottom: 4px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
           <span style="font-weight: 600; color: #444;">${label}</span>
           <span style="font-weight: 700; font-size: 15px; color: ${color};">${value}</span>
@@ -126,32 +127,32 @@ export function getBasicEmailHtml(data: MarketData): string {
   return `
     <div style="${cleanStyle}">
       <div style="${containerStyle}">
-        ${generateCommonHeader('Basic Market Snapshot')}
+        ${generateCommonHeader('Daily Snapshot')}
         
         <div style="${contentStyle}">
           <div style="text-align: center; margin-bottom: 24px;">
-            <p style="text-transform: uppercase; font-size: 11px; letter-spacing: 1px; color: #888; margin-bottom: 4px;">Current Market Status</p>
-            <h2 style="color: ${getModeColor(data.marketMode)}; margin: 0; font-size: 28px;">${data.marketMode}</h2>
+            <p style="text-transform: uppercase; font-size: 11px; letter-spacing: 1px; color: #888; margin-bottom: 4px;">Market Bias</p>
+            <h2 style="color: ${getModeColor(data.marketMode)}; margin: 0; font-size: 32px; font-weight: 800;">${data.marketMode}</h2>
           </div>
 
           <div style="${cardStyle}">
-            <h3 style="margin: 0 0 12px; font-size: 14px; text-transform: uppercase; color: #555;">Key Indicators</h3>
+            <h3 style="margin: 0 0 12px; font-size: 12px; text-transform: uppercase; color: #888; letter-spacing: 1px;">Key Indicators</h3>
             ${generateMetricRow('VIX', data.vix.toFixed(2), data.vixScore)}
-            ${generateMetricRow('Yield Spread 10y-2y', data.yieldSpread.toFixed(2), data.yieldSpreadScore)}
-            ${generateMetricRow('Market Liquidity', '$' + data.liquidity.toFixed(2) + 'T', data.liquidityScore)}
+            ${generateMetricRow('Yield Spread', data.yieldSpread.toFixed(2), data.yieldSpreadScore)}
           </div>
           
-          ${data.sentiment ? `
-          <div style="margin-top: 16px; padding: 12px; background: #fafafa; border-radius: 6px; font-size: 13px; color: #555; border-left: 3px solid #ccc;">
-               <strong>🤖 AI Hint:</strong> 
-               <span style="filter: blur(3px); user-select: none;">Volatility is rising, suggesting defensive positioning...</span>
+          <div style="padding: 16px; background: #fdfcf5; border-radius: 6px; border-left: 4px solid #D4AF37; margin: 24px 0;">
+            <div style="font-size: 12px; font-weight: bold; color: #D4AF37; margin-bottom: 4px;">🤖 AI ANALYST TEASER</div>
+            <div style="font-size: 14px; color: #666; font-style: italic;">
+              ${data.sentiment ? data.sentiment.substring(0, 60) + '...' : 'Market volatility is shifting...'}
+            </div>
+            <a href="https://crashalert.online/dashboard" style="display: block; margin-top: 8px; font-size: 12px; color: #D4AF37; font-weight: bold; text-decoration: none;">Unlock full analysis &rarr;</a>
           </div>
-          ` : ''}
 
-          <div style="text-align: center; margin-top: 32px; padding: 20px; background: #fff8e1; border-radius: 6px; border: 1px dashed #D4AF37;">
-            <p style="margin: 0 0 10px; font-weight: 600; color: #8a6d0b;">Unlock Pro Insights & Full Analysis</p>
-            <p style="font-size: 12px; margin-bottom: 16px; color: #666;">Get access to 6 more key indicators, AI analysis, and trend forecasts.</p>
-            <a href="https://crashalert.online/dashboard" style="${buttonStyle}">Upgrade to Pro</a>
+          <div style="text-align: center; padding: 24px; background: #fff8e1; border-radius: 8px; border: 2px dashed #D4AF37;">
+            <h3 style="margin: 0 0 8px; color: #8a6d0b;">Upgrade to Pro</h3>
+            <p style="font-size: 13px; color: #666; margin-bottom: 16px;">Get all 9 risk indicators, heatmapped data, and the Expert Risk Graph.</p>
+            <a href="https://crashalert.online/dashboard" style="${buttonStyle}">View Plans</a>
           </div>
         </div>
   
@@ -167,114 +168,112 @@ export function getProEmailHtml(data: MarketData): string {
   return `
     <div style="${cleanStyle}">
       <div style="${containerStyle}">
-        ${generateCommonHeader('Pro Market Intelligence')}
+        ${generateCommonHeader('Pro Intelligence')}
         
         <div style="${contentStyle}">
           <div style="text-align: center; margin-bottom: 24px;">
-             <p style="text-transform: uppercase; font-size: 11px; letter-spacing: 1px; color: #888; margin-bottom: 4px;">Market Risk Assessment</p>
-             <h2 style="color: ${getModeColor(data.marketMode)}; margin: 0; font-size: 28px;">${data.marketMode}</h2>
+             <h2 style="color: ${getModeColor(data.marketMode)}; margin: 0; font-size: 32px; font-weight: 800;">${data.marketMode}</h2>
+             <p style="font-size: 13px; color: #666; margin-top: 4px;">Detailed Risk Assessment Dashboard</p>
           </div>
 
           ${data.sentiment ? `
-          <div style="background: #fdfcf5; padding: 16px; border-left: 4px solid #D4AF37; margin-bottom: 24px; border-radius: 0 4px 4px 0;">
-               <div style="font-size: 12px; font-weight: bold; color: #D4AF37; text-transform: uppercase; margin-bottom: 4px;">🤖 AI Analyst Insight</div>
-               <div style="font-style: italic; color: #444; font-size: 14px; line-height: 1.5;">"${data.sentiment}"</div>
+          <div style="background: #fdfcf5; padding: 16px; border-left: 4px solid #D4AF37; margin-bottom: 24px; border-radius: 0 4px 4px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+               <div style="font-size: 12px; font-weight: bold; color: #D4AF37; text-transform: uppercase; margin-bottom: 4px;">🤖 AI Strategic Summary</div>
+               <div style="font-style: italic; color: #1a1a1a; font-size: 15px; line-height: 1.6;">"${data.sentiment}"</div>
           </div>
           ` : ''}
 
           <div style="${cardStyle}">
-            <h3 style="margin: 0 0 12px; font-size: 14px; text-transform: uppercase; color: #555; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px;">Risk Dashboard</h3>
-            ${generateMetricRow('VIX', data.vix.toFixed(2), data.vixScore)}
-            ${generateMetricRow('Yield Spread (10Y-2Y)', data.yieldSpread.toFixed(2), data.yieldSpreadScore)}
-            ${generateMetricRow('S&P 500 P/E', data.sp500pe.toFixed(2), data.sp500peScore)}
-            ${generateMetricRow('Liquidity', '$' + data.liquidity.toFixed(2) + 'T', data.liquidityScore)}
-            ${generateMetricRow('Junk Bond Spread', data.junkBondSpread.toFixed(2) + '%', data.junkBondSpreadScore)}
-            ${generateMetricRow('Margin Debt', data.marginDebt.toFixed(2), data.marginDebtScore)}
-            ${generateMetricRow('Insider Activity', data.insiderActivity.toFixed(2), data.insiderActivityScore)}
-            ${generateMetricRow('CFNAI', data.cfnai.toFixed(2), data.cfnaiScore)}
-            ${generateMetricRow('1-Month Forecast Signal', data.oneMonthAhead.toFixed(2), data.oneMonthAheadScore)}
+            <h3 style="margin: 0 0 16px; font-size: 12px; text-transform: uppercase; color: #888; letter-spacing: 1px; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px;">Indicator Heatmap</h3>
+            ${generateMetricRow('VIX', data.vix.toFixed(2), data.vixScore, true)}
+            ${generateMetricRow('Yield Spread', data.yieldSpread.toFixed(2), data.yieldSpreadScore, true)}
+            ${generateMetricRow('S&P 500 P/E', data.sp500pe.toFixed(2), data.sp500peScore, true)}
+            ${generateMetricRow('Market Liquidity', '$' + data.liquidity.toFixed(2) + 'T', data.liquidityScore, true)}
+            ${generateMetricRow('Junk Bond Spread', data.junkBondSpread.toFixed(2) + '%', data.junkBondSpreadScore, true)}
+            ${generateMetricRow('Margin Debt', data.marginDebt.toFixed(2), data.marginDebtScore, true)}
+            ${generateMetricRow('Insider Activity', data.insiderActivity.toFixed(2), data.insiderActivityScore, true)}
+            ${generateMetricRow('CFNAI', data.cfnai.toFixed(2), data.cfnaiScore, true)}
+            ${generateMetricRow('1-Month Forecast', data.oneMonthAhead.toFixed(2), data.oneMonthAheadScore, true)}
           </div>
 
-          <div style="text-align: center; margin-top: 24px;">
-            <a href="https://crashalert.online/dashboard" style="font-size: 12px; color: #888; text-decoration: underline;">Manage Subscription / Upgrade</a>
+          <div style="text-align: center; margin-top: 32px;">
+            <a href="https://crashalert.online/dashboard" style="${buttonStyle}">Manage Dashboard</a>
           </div>
         </div>
 
         <div style="${footerStyle}">
-          <p>You are receiving this as a Pro subscriber.</p>
-          <p>© ${new Date().getFullYear()} CrashAlert. All rights reserved.</p>
+          <p>© ${new Date().getFullYear()} CrashAlert. Professional Tier.</p>
         </div>
       </div>
     </div>
   `;
 }
 
-export function getExpertEmailHtml(data: MarketData, chartUrl: string): string {
-  const aiSection = data.sentiment ? `
-      <div style="background: linear-gradient(to right, #ffffff, #fdfcf5); padding: 16px; border-left: 4px solid #D4AF37; margin-bottom: 24px; border-radius: 0 4px 4px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.03);">
-        <div style="display: flex; align-items: center; margin-bottom: 8px;">
-          <span style="font-size: 16px; margin-right: 6px;">🤖</span>
-          <span style="font-size: 12px; font-weight: bold; color: #D4AF37; text-transform: uppercase;">Strategic AI Analysis</span>
-        </div>
-        <div style="font-style: italic; color: #333; font-size: 15px; line-height: 1.6;">"${data.sentiment}"</div>
-      </div>
-    ` : '';
+export function getExpertEmailHtml(data: MarketData, spyChartUrl: string, riskChartUrl: string): string {
+  const riskColor = getScoreColor(data.aggregateRiskScore >= 5 ? 2 : (data.aggregateRiskScore >= 3 ? 1 : 0));
 
-  const chartSection = chartUrl ? `
-      <div style="${cardStyle} padding: 0; overflow: hidden;">
-        <div style="padding: 12px 16px; background: #f9f9f9; border-bottom: 1px solid #eee;">
-            <h3 style="margin: 0; font-size: 14px; color: #444;">Market Forecast Chart</h3>
-        </div>
-        <img src="${chartUrl}" alt="Market Forecast" style="width: 100%; display: block;" />
-        <div style="padding: 8px; text-align: center; font-size: 11px; color: #999;">
-           Data based on VIX & volatility trends.
-        </div>
-      </div>
-  ` : '';
+  const eventRows = data.upcomingEvents.map(event => `
+    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
+      <span style="font-size: 13px; color: #333; font-weight: 500;">${event.name}</span>
+      <span style="font-size: 12px; color: ${event.daysUntil <= 2 ? '#EF4444' : '#666'}; font-weight: bold;">
+        ${event.daysUntil === 0 ? 'TODAY' : `In ${event.daysUntil} days`}
+      </span>
+    </div>
+  `).join('');
 
   return `
     <div style="${cleanStyle}">
       <div style="${containerStyle}">
-        ${generateCommonHeader('Expert Market Intelligence')}
+        ${generateCommonHeader('Expert Terminal')}
         
         <div style="${contentStyle}">
           
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; background: #111; color: #fff; padding: 16px; border-radius: 6px;">
-             <div>
-               <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #aaa;">Market Status</div>
-               <div style="font-size: 24px; font-weight: bold; color: ${getModeColor(data.marketMode)};">${data.marketMode}</div>
+          <div style="display: flex; align-items: start; gap: 20px; background: #000; color: #fff; padding: 24px; border-radius: 8px; margin-bottom: 24px; border-left: 5px solid ${riskColor};">
+             <div style="flex: 1;">
+               <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #aaa; margin-bottom: 4px;">Expert Risk Signal</div>
+               <div style="font-size: 28px; font-weight: 900; color: ${getModeColor(data.marketMode)};">${data.marketMode}</div>
              </div>
              <div style="text-align: right;">
-               <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #aaa;">Risk Score</div>
-               <div style="font-size: 24px; font-weight: bold;">${data.vix.toFixed(1)}</div>
+               <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #aaa; margin-bottom: 4px;">Aggregate Score</div>
+               <div style="font-size: 32px; font-weight: 900; color: ${riskColor};">${data.aggregateRiskScore}<span style="font-size: 14px; font-weight: 400; color: #666;">/18</span></div>
              </div>
           </div>
 
-          ${aiSection}
+          <div style="${cardStyle}">
+            <h3 style="margin: 0 0 16px; font-size: 12px; text-transform: uppercase; color: #888; letter-spacing: 1px;">Expert Risk Trend (30D)</h3>
+            <img src="${riskChartUrl}" alt="Risk Trend Graph" style="width:100%; border-radius: 4px;" />
+            <div style="margin-top: 8px; font-size: 11px; color: #999; text-align: center;">Threshold crossing 5.0 signals high potential for crash events.</div>
+          </div>
 
-          ${chartSection}
+          <div style="${cardStyle} background: #fafafa;">
+             <h3 style="margin: 0 0 12px; font-size: 12px; text-transform: uppercase; color: #888; letter-spacing: 1px;">Upcoming Data Events</h3>
+             ${eventRows}
+          </div>
 
           <div style="${cardStyle}">
-            <h3 style="margin: 0 0 16px; font-size: 14px; text-transform: uppercase; color: #555; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px;">Deep Dive Metrics</h3>
-            ${generateMetricRow('VIX', data.vix.toFixed(2), data.vixScore)}
-            ${generateMetricRow('Yield Spread', data.yieldSpread.toFixed(2), data.yieldSpreadScore)}
-            ${generateMetricRow('S&P 500 P/E', data.sp500pe.toFixed(2), data.sp500peScore)}
-            ${generateMetricRow('Global Liquidity', '$' + data.liquidity.toFixed(2) + ' T', data.liquidityScore)}
-            ${generateMetricRow('High Yield Spread', data.junkBondSpread.toFixed(2) + '%', data.junkBondSpreadScore)}
-            ${generateMetricRow('Margin Debt', data.marginDebt.toFixed(2), data.marginDebtScore)}
-            ${generateMetricRow('Insider Buy/Sell', data.insiderActivity.toFixed(2), data.insiderActivityScore)}
-            ${generateMetricRow('CFNAI', data.cfnai.toFixed(2), data.cfnaiScore)}
-            ${generateMetricRow('Algorithm Forecast', data.oneMonthAhead.toFixed(2), data.oneMonthAheadScore)}
+            <h3 style="margin: 0 0 12px; font-size: 12px; text-transform: uppercase; color: #888; letter-spacing: 1px;">S&P 500 Market Projection</h3>
+            <img src="${spyChartUrl}" alt="Price Forecast" style="width:100%; border-radius: 4px;" />
           </div>
 
-          <div style="text-align: center; margin-top: 24px;">
-             <a href="https://crashalert.online/dashboard" style="font-size: 12px; color: #888; text-decoration: underline;">Manage Pro Subscription</a>
+          <div style="background: #fdfcf5; padding: 20px; border-radius: 8px; border: 1px solid #D4AF37; margin-bottom: 24px;">
+               <div style="font-size: 12px; font-weight: bold; color: #D4AF37; text-transform: uppercase; margin-bottom: 8px;">🤖 Institutional AI Strategist</div>
+               <div style="font-style: italic; color: #1a1a1a; font-size: 16px; line-height: 1.6;">"${data.sentiment}"</div>
           </div>
+
+          <div style="${cardStyle}">
+            <h3 style="margin: 0 0 16px; font-size: 12px; text-transform: uppercase; color: #888;">Full Metrics Terminal</h3>
+            ${generateMetricRow('VIX', data.vix.toFixed(2), data.vixScore, true)}
+            ${generateMetricRow('Yield Spread', data.yieldSpread.toFixed(2), data.yieldSpreadScore, true)}
+            ${generateMetricRow('Liquidity', '$' + data.liquidity.toFixed(2) + 'T', data.liquidityScore, true)}
+            ${generateMetricRow('Insider Buy/Sell', data.insiderActivity.toFixed(2), data.insiderActivityScore, true)}
+            ${generateMetricRow('Algorithm Forecast', data.oneMonthAhead.toFixed(2), data.oneMonthAheadScore, true)}
+          </div>
+
         </div>
 
         <div style="${footerStyle}">
-          <p>Expert Level Analysis for Institutional Grade Decisions.</p>
-          <p>© ${new Date().getFullYear()} CrashAlert. All rights reserved.</p>
+          <p>Expert Terminal Intelligence. Priority Institutional Stream.</p>
+          <p>© ${new Date().getFullYear()} CrashAlert.</p>
         </div>
       </div>
     </div>

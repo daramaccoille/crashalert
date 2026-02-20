@@ -1,11 +1,11 @@
 import { fetchMarketData } from './market';
-import { generateTrendChartUrl } from './utils/charts';
+import { generateTrendChartUrl, generateExpertRiskChartUrl } from './utils/charts';
 import { generateMarketSentiment } from './utils/ai';
 import { sendEmail } from './utils/email';
 import { getDb } from './db';
 import { subscribers, marketMetrics } from './schema';
 import { getBasicEmailHtml, getProEmailHtml, getExpertEmailHtml } from './templates/email-templates';
-import { eq } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 
 export interface Env {
     DATABASE_URL: string;
@@ -55,24 +55,48 @@ export default {
                     cfnaiScore: data.cfnaiScore,
                     liquidityScore: data.liquidityScore,
                     oneMonthAheadScore: data.oneMonthAheadScore,
+                    aggregateRiskScore: data.aggregateRiskScore,
 
                     rawJson: data
                 });
 
-                // 3. Test Email Send - Send a sample Pro email to admin if configured
-                let emailResult: { success: boolean; error?: string } = { success: false, error: "ADMIN_EMAIL not configured" };
+                // 3. Test Email Send - Send samples of all 3 tiers to admin if configured
+                let emailResult = { success: true, count: 0, errors: [] as string[] };
 
                 if (env.ADMIN_EMAIL) {
-                    // This will now use the data.sentiment we assigned above
-                    const sampleHtml = getProEmailHtml(data);
-                    emailResult = await sendEmail(
-                        env.ADMIN_EMAIL,
-                        "CrashAlert Update Test",
-                        sampleHtml,
-                        env
-                    );
+                    // Pre-generate charts for Expert test
+                    let expertRiskChartUrl = "";
+                    let globalChartUrl = "";
+
+                    try {
+                        const riskHistoryResults = await db.select({ score: marketMetrics.aggregateRiskScore })
+                            .from(marketMetrics)
+                            .orderBy(desc(marketMetrics.createdAt))
+                            .limit(30);
+                        const scores = riskHistoryResults.map(r => r.score || 0).reverse();
+                        if (scores.length === 0) scores.push(data.aggregateRiskScore);
+                        expertRiskChartUrl = generateExpertRiskChartUrl(scores);
+
+                        if (data.spyHistory && data.spyHistory.length > 0) {
+                            const lastVal = data.spyHistory[0];
+                            const prediction = lastVal * (1 + (data.oneMonthAhead / 100));
+                            globalChartUrl = generateTrendChartUrl('S&P 500 Trend', data.spyHistory.slice(0, 30).reverse(), prediction, lastVal * 1.05, lastVal * 0.95);
+                        }
+                    } catch (e) { console.error("Chart generation failed for test", e); }
+
+                    const tests = [
+                        { name: "Basic", html: getBasicEmailHtml(data) },
+                        { name: "Pro", html: getProEmailHtml(data) },
+                        { name: "Expert", html: getExpertEmailHtml(data, globalChartUrl, expertRiskChartUrl) }
+                    ];
+
+                    for (const test of tests) {
+                        const res = await sendEmail(env.ADMIN_EMAIL, `[TEST] ${test.name} Market Report`, test.html, env);
+                        if (res.success) emailResult.count++;
+                        else emailResult.errors.push(`${test.name}: ${res.error}`);
+                    }
                 } else {
-                    console.log("Skipping test email: ADMIN_EMAIL not set");
+                    console.log("Skipping test emails: ADMIN_EMAIL not set");
                 }
 
                 return new Response(JSON.stringify({
@@ -130,6 +154,7 @@ export default {
                 cfnaiScore: data.cfnaiScore,
                 liquidityScore: data.liquidityScore,
                 oneMonthAheadScore: data.oneMonthAheadScore,
+                aggregateRiskScore: data.aggregateRiskScore,
 
                 rawJson: data
             });
@@ -159,6 +184,24 @@ export default {
                 console.warn("No SPY history available, skipping chart.");
             }
 
+            // Expert Risk Chart History
+            let expertRiskChartUrl = "";
+            try {
+                const riskHistoryResults = await db.select({ score: marketMetrics.aggregateRiskScore })
+                    .from(marketMetrics)
+                    .orderBy(desc(marketMetrics.createdAt))
+                    .limit(30);
+
+                // Extract scores and ensure the current one is included at the end
+                const scores = riskHistoryResults.map(r => r.score || 0).reverse();
+                // If this is the very first run, history might be empty, so at least show current
+                if (scores.length === 0) scores.push(data.aggregateRiskScore);
+
+                expertRiskChartUrl = generateExpertRiskChartUrl(scores);
+            } catch (e) {
+                console.error("Failed to generate Expert Risk Chart:", e);
+            }
+
             // Batch Sending Logic
             const BATCH_SIZE = 20;
             let successCount = 0;
@@ -174,7 +217,7 @@ export default {
                         switch (sub.plan) {
                             case 'expert':
                             case 'advanced':
-                                html = getExpertEmailHtml(data, globalChartUrl);
+                                html = getExpertEmailHtml(data, globalChartUrl, expertRiskChartUrl);
                                 break;
                             case 'pro':
                                 html = getProEmailHtml(data);

@@ -1,6 +1,7 @@
 import { fetchFredSeries } from './utils/fred';
 import { AlphaVantageClient } from './utils/alphavantage';
 import { Env } from './index';
+import { getUpcomingEvents } from './utils/events';
 
 export interface MarketData {
     vix: number;
@@ -25,6 +26,8 @@ export interface MarketData {
     marketMode: 'BULL' | 'BEAR' | 'NEUTRAL';
     sentiment?: string;
     spyHistory: number[];
+    aggregateRiskScore: number;
+    upcomingEvents: { name: string; daysUntil: number; description: string }[];
 }
 
 function getScore(value: number, threshold1: number, threshold2: number, invert: boolean = false): number {
@@ -131,6 +134,22 @@ export async function fetchMarketData(env: Env): Promise<MarketData> {
         cfnaiScore: getScore(cfnaiData.value, -0.7, -1.5, true), // Lower is recessionary
         liquidityScore: getScore(liquidityTrillions, 5.0, 4.0, true), // Lower liquidity is worse? Or based on trend?
         oneMonthAheadScore: getScore(oneMonthData.value, 1.0, 0, true),
-        spyHistory: spyHistory // Return full history for charting
+        spyHistory: spyHistory, // Return full history for charting
+        aggregateRiskScore: 0, // Placeholder to be calculated below
+        upcomingEvents: getUpcomingEvents()
     };
+
+    // Calculate final aggregate score
+    data.aggregateRiskScore =
+        data.vixScore +
+        data.yieldSpreadScore +
+        data.sp500peScore +
+        data.junkBondSpreadScore +
+        data.marginDebtScore +
+        data.insiderActivityScore +
+        data.cfnaiScore +
+        data.liquidityScore +
+        data.oneMonthAheadScore;
+
+    return data;
 }

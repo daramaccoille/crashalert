@@ -93,3 +93,48 @@ export function generateTrendChartUrl(
     // Encode URL
     return `${baseUrl}?c=${encodeURIComponent(JSON.stringify(config))}&backgroundColor=transparant&width=500&height=300&format=png`;
 }
+
+export function generateExpertRiskChartUrl(
+    history: number[]
+): string {
+    const baseUrl = "https://quickchart.io/chart";
+    const labels = history.map((_, i) => `D-${history.length - i}`);
+
+    const config = {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Aggregate Risk Score',
+                    data: history,
+                    borderColor: '#D4AF37', // Gold
+                    backgroundColor: 'rgba(212, 175, 55, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 2,
+                },
+                {
+                    label: 'Warning Threshold (5)',
+                    data: Array(history.length).fill(5),
+                    borderColor: 'rgba(239, 68, 68, 0.5)', // Transparent Red
+                    borderDash: [5, 5],
+                    fill: false,
+                    pointRadius: 0,
+                }
+            ]
+        },
+        options: {
+            maintainAspectRatio: false,
+            scales: {
+                yAxes: [{
+                    ticks: { min: 0, max: 18, fontColor: '#999' },
+                    gridLines: { color: 'rgba(255,255,255,0.05)' }
+                }],
+                xAxes: [{ display: false }]
+            }
+        }
+    };
+
+    return `${baseUrl}?c=${encodeURIComponent(JSON.stringify(config))}&backgroundColor=transparent&width=500&height=250&format=png`;
+}
