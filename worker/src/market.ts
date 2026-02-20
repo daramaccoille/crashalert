@@ -2,14 +2,27 @@ import { fetchFredSeries } from './utils/fred';
 import { AlphaVantageClient } from './utils/alphavantage';
 import { Env } from './index';
 import { getUpcomingEvents } from './utils/events';
+import { scrapeSP500PE } from './utils/pe_scraper';
+
+export const RISK_THRESHOLDS = {
+    vix: 20,
+    yieldSpread: 0.0,
+    sp500pe: 25,
+    junkBondSpread: 4.0,
+    marginDebt: 1000,
+    insiderActivity: 0.5,
+    cfnai: -0.7,
+    liquidity: 5.0,
+    oneMonthAhead: 1.0
+};
 
 export interface MarketData {
     vix: number;
     yieldSpread: number;
-    sp500pe: number; // Placeholder: hard to get real PE from simple free APIs, might mock or use simple price proxy
+    sp500pe: number;
     junkBondSpread: number;
-    marginDebt: number; // Will likely need manual or mock
-    insiderActivity: number; // Will likely need manual or mock
+    marginDebt: number;
+    insiderActivity: number;
     cfnai: number;
     liquidity: number;
     oneMonthAhead: number;
@@ -64,7 +77,8 @@ export async function fetchMarketData(env: Env): Promise<MarketData> {
         liquidityData,
         oneMonthData,
         spyPrice,
-        spyHistory
+        spyHistory,
+        currentPeRatio
     ] = await Promise.all([
         fetchFredSeries('VIXCLS', FRED_KEY).catch(e => ({ value: 16.5, date: 'mock' })), // Fallback to safe defaults if API fails
         fetchFredSeries('DGS10', FRED_KEY).catch(e => ({ value: 4.0, date: 'mock' })),
@@ -74,20 +88,13 @@ export async function fetchMarketData(env: Env): Promise<MarketData> {
         fetchFredSeries('WALCL', FRED_KEY).catch(e => ({ value: 7500000, date: 'mock' })), // Millions
         fetchFredSeries('JLNUM1M', FRED_KEY).catch(e => ({ value: 3.0, date: 'mock' })),
         avClient.getGlobalQuote('SPY').catch(e => 500),
-        avClient.getDailyCloses('SPY', 'full').catch(e => [])
+        avClient.getDailyCloses('SPY', 'full').catch(e => []),
+        scrapeSP500PE().catch(e => 29.5)
     ]);
 
     // 2. Process Calculations
     const currentVix = vixData.value;
     const spread = yield10y.value - yield2y.value;
-    const junkSpreadBps = junkYield.value * 100; // if yielded as percentage? FRED BAMLH0A0HYM2 is usually percent e.g. 3.25
-    // Actually BAMLH0A0HYM2 is "Option-Adjusted Spread". 
-    // If value is 3.25, that is 3.25%. 
-    // The user sheet said "2.71" -> "3 bps"? Wait, 2.71% = 271 bps. 
-    // The user logic: "Spread: 3 bps" in the Note seems like a typo or old data.
-    // Let's standardise: 2.71 value = 271 bps.
-
-    // Liquidity: FRED returns Millions. We want Trillions for display.
     const liquidityTrillions = liquidityData.value / 1000000;
 
     // Market Mode
@@ -109,33 +116,26 @@ export async function fetchMarketData(env: Env): Promise<MarketData> {
     const data: MarketData = {
         vix: currentVix,
         yieldSpread: spread,
-        sp500pe: 27.5, // Mocked for now, hard to get free real-time PE
-        junkBondSpread: junkYield.value, // Keep as raw percentage for now (e.g. 2.71)
-        marginDebt: 1126.0, // Mocked/Manual
-        insiderActivity: 0.33, // Mocked/Manual
+        sp500pe: currentPeRatio,
+        junkBondSpread: junkYield.value,
+        marginDebt: 1126.0,
+        insiderActivity: 0.33,
         cfnai: cfnaiData.value,
         liquidity: liquidityTrillions,
         oneMonthAhead: oneMonthData.value,
         marketMode,
-        // Scores (0=Normal, 1=Concern, 2=Danger)
-        // Adjust thresholds as needed
-        vixScore: getScore(currentVix, 20, 30),
-        yieldSpreadScore: getScore(spread, 0.0, -0.5, true), // Invert: lower is worse. Wait, yield spread < 0 is inverted. So < 0 is bad (1), < -0.5 is very bad (2)?
-        // Re-logic for Yield Spread:
-        // Normal: > 0. 
-        // Warning: < 0 (Inverted) -> Score 1
-        // Danger: < -0.5 -> Score 2?
-        // Let's use getScore(spread, 0, -0.5, true) -> if < -0.5 ret 2, if < 0 ret 1. Correct.
-
-        sp500peScore: getScore(27.5, 25, 30),
-        junkBondSpreadScore: getScore(junkYield.value, 4.0, 6.0), // 400bps, 600bps
-        marginDebtScore: getScore(1126.0, 1000, 1500), // Placeholder thresholds
-        insiderActivityScore: getScore(0.33, 0.5, 0.8), // Placeholder
-        cfnaiScore: getScore(cfnaiData.value, -0.7, -1.5, true), // Lower is recessionary
-        liquidityScore: getScore(liquidityTrillions, 5.0, 4.0, true), // Lower liquidity is worse? Or based on trend?
-        oneMonthAheadScore: getScore(oneMonthData.value, 1.0, 0, true),
-        spyHistory: spyHistory, // Return full history for charting
-        aggregateRiskScore: 0, // Placeholder to be calculated below
+        // Scores
+        vixScore: getScore(currentVix, RISK_THRESHOLDS.vix, 30),
+        yieldSpreadScore: getScore(spread, RISK_THRESHOLDS.yieldSpread, -0.5, true),
+        sp500peScore: getScore(currentPeRatio, RISK_THRESHOLDS.sp500pe, 35),
+        junkBondSpreadScore: getScore(junkYield.value, RISK_THRESHOLDS.junkBondSpread, 6.0),
+        marginDebtScore: getScore(1126.0, RISK_THRESHOLDS.marginDebt, 1500),
+        insiderActivityScore: getScore(0.33, RISK_THRESHOLDS.insiderActivity, 0.8),
+        cfnaiScore: getScore(cfnaiData.value, RISK_THRESHOLDS.cfnai, -1.5, true),
+        liquidityScore: getScore(liquidityTrillions, RISK_THRESHOLDS.liquidity, 4.0, true),
+        oneMonthAheadScore: getScore(oneMonthData.value, RISK_THRESHOLDS.oneMonthAhead, 0, true),
+        spyHistory: spyHistory,
+        aggregateRiskScore: 0,
         upcomingEvents: getUpcomingEvents()
     };
 

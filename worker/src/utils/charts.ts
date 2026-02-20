@@ -96,6 +96,7 @@ export function generateTrendChartUrl(
 
 export function generateMetricChartUrl(
     history: number[],
+    threshold: number,
     color: string = 'rgb(212, 175, 55)'
 ): string {
     const baseUrl = "https://quickchart.io/chart";
@@ -113,6 +114,14 @@ export function generateMetricChartUrl(
                     fill: false,
                     pointRadius: 0,
                     tension: 0.1
+                },
+                {
+                    data: Array(history.length).fill(threshold),
+                    borderColor: 'rgba(239, 68, 68, 0.4)', // Faded Red
+                    borderDash: [3, 3],
+                    borderWidth: 1,
+                    fill: false,
+                    pointRadius: 0
                 }
             ]
         },
@@ -121,7 +130,14 @@ export function generateMetricChartUrl(
             legend: { display: false },
             scales: {
                 xAxes: [{ display: false }],
-                yAxes: [{ display: false }]
+                yAxes: [{
+                    display: false,
+                    // Ensure the threshold is always visible in the Y-axis range
+                    ticks: {
+                        suggestedMin: Math.min(...history, threshold) * 0.9,
+                        suggestedMax: Math.max(...history, threshold) * 1.1
+                    }
+                }]
             }
         }
     };

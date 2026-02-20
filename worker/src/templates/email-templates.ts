@@ -4,21 +4,15 @@ import { MarketData } from '../market';
 // --- Configuration & Helpers ---
 
 const metricInfo: Record<string, string> = {
-  'VIX': 'Expected volatility. >20 signals fear.',
-  'Yield Spread 10y-2y': 'Recession indicator. Inversion (<0) is bearish.',
-  'Yield Spread': 'Recession signal. Negative is a warning.',
-  'S&P 500 P/E': 'Valuation check. >25 is expensive.',
-  'Market Liquidity': 'Global money supply. Higher supports assets.',
-  'Liquidity': 'Fuel for markets. Trends matter.',
-  'Global Liquidity': 'Total money supply (USD). Key driver.',
-  'Junk Bond Spread': 'Credit stress. Spikes signal danger.',
-  'High Yield Spread': 'Corporate credit risk gauge.',
-  'Margin Debt': 'Speculative leverage. High is risky.',
-  'Insider Activity': 'Smart money flow. High selling is bearish.',
-  'Insider Buy/Sell': 'Ratio of insider sentiment.',
-  'CFNAI': 'Economic growth. <-0.70 signals recession.',
-  '1-Month Forecast Signal': 'AI-driven rapid projection.',
-  'Algorithm Forecast': 'Proprietary short-term model.',
+  'VIX': 'Expected volatility. >20 indicates spike in market fear.',
+  'Yield Spread': 'Recession signal. Inversion (<0) is a major crash warning.',
+  'S&P 500 P/E': 'Valuation gauge. >25 suggests excessive market premiums.',
+  'Liquidity': 'Fuel for assets. <$5.0T signals tightening financial conditions.',
+  'Junk Bond Spread': 'Credit stress. >4.0% signals corporate defaults risk.',
+  'Margin Debt': 'Speculative leverage. >1000 signals "forced selling" potential.',
+  'Insider Activity': 'Smart money flow. <0.5 shows insiders are exiting positions.',
+  'CFNAI': 'National activity. <-0.70 signals a high recession probability.',
+  'Algorithm Forecast': 'AI Projection. Negative suggests bearish momentum.',
 };
 
 // --- Styles ---

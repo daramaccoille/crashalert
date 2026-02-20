@@ -1,4 +1,4 @@
-import { fetchMarketData } from './market';
+import { fetchMarketData, RISK_THRESHOLDS } from './market';
 import { generateTrendChartUrl, generateExpertRiskChartUrl, generateMetricChartUrl } from './utils/charts';
 import { generateMarketSentiment } from './utils/ai';
 import { sendEmail } from './utils/email';
@@ -104,7 +104,20 @@ export default {
                         metrics.forEach(m => {
                             const values = history.map(h => Number(h[m.key]) || 0).reverse();
                             if (values.length === 0) values.push(Number(data[m.key as keyof typeof data]) || 0);
-                            metricCharts[m.label] = generateMetricChartUrl(values);
+
+                            // Map the key to the official threshold
+                            const thresholdKey = m.key === 'yieldSpread' ? 'yieldSpread' :
+                                m.key === 'sp500pe' ? 'sp500pe' :
+                                    m.key === 'junkBondSpread' ? 'junkBondSpread' :
+                                        m.key === 'marginDebt' ? 'marginDebt' :
+                                            m.key === 'insiderActivity' ? 'insiderActivity' :
+                                                m.key === 'cfnai' ? 'cfnai' :
+                                                    m.key === 'liquidity' ? 'liquidity' :
+                                                        m.key === 'oneMonthAhead' ? 'oneMonthAhead' :
+                                                            'vix';
+
+                            const threshold = RISK_THRESHOLDS[thresholdKey as keyof typeof RISK_THRESHOLDS];
+                            metricCharts[m.label] = generateMetricChartUrl(values, threshold);
                         });
                     } catch (e) { console.error("Indicator charts failed", e); }
 
@@ -234,7 +247,19 @@ export default {
                 metrics.forEach(m => {
                     const values = history.map(h => Number(h[m.key]) || 0).reverse();
                     if (values.length === 0) values.push(Number(data[m.key as keyof typeof data]) || 0);
-                    metricCharts[m.label] = generateMetricChartUrl(values);
+
+                    const thresholdKey = m.key === 'yieldSpread' ? 'yieldSpread' :
+                        m.key === 'sp500pe' ? 'sp500pe' :
+                            m.key === 'junkBondSpread' ? 'junkBondSpread' :
+                                m.key === 'marginDebt' ? 'marginDebt' :
+                                    m.key === 'insiderActivity' ? 'insiderActivity' :
+                                        m.key === 'cfnai' ? 'cfnai' :
+                                            m.key === 'liquidity' ? 'liquidity' :
+                                                m.key === 'oneMonthAhead' ? 'oneMonthAhead' :
+                                                    'vix';
+
+                    const threshold = RISK_THRESHOLDS[thresholdKey as keyof typeof RISK_THRESHOLDS];
+                    metricCharts[m.label] = generateMetricChartUrl(values, threshold);
                 });
             } catch (e) {
                 console.error("Failed to generate Expert visuals:", e);
