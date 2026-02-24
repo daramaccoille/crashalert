@@ -23,7 +23,12 @@ export default {
         const url = new URL(request.url);
         if (url.pathname === '/trigger-update') {
             try {
-                const data = await fetchMarketData(env);
+                let overrideData = null;
+                if (request.method === 'POST') {
+                    overrideData = await request.json() as any;
+                }
+
+                const data = await fetchMarketData(env, overrideData);
 
                 // 1. Generate Sentiment
                 const sentiment = await generateMarketSentiment(data, env);
@@ -45,6 +50,9 @@ export default {
                     oneMonthAhead: data.oneMonthAhead.toFixed(2),
                     marketMode: data.marketMode,
                     sentiment: sentiment,
+                    oecdValue: data.oecdValue.toFixed(4),
+                    oecdMomentum: data.oecdMomentum.toFixed(6),
+                    oecdTrend: data.oecdTrend,
                     // Scores
                     vixScore: data.vixScore,
                     yieldSpreadScore: data.yieldSpreadScore,
@@ -192,7 +200,9 @@ export default {
                 liquidityScore: data.liquidityScore,
                 oneMonthAheadScore: data.oneMonthAheadScore,
                 aggregateRiskScore: data.aggregateRiskScore,
-
+                oecdValue: data.oecdValue.toFixed(4),
+                oecdMomentum: data.oecdMomentum.toFixed(6),
+                oecdTrend: data.oecdTrend,
                 rawJson: data
             });
 

@@ -37,11 +37,17 @@ export interface MarketData {
     liquidityScore: number;
     oneMonthAheadScore: number;
     marketMode: 'BULL' | 'BEAR' | 'NEUTRAL';
-    sentiment?: string;
+    oecdValue: number;
+    oecdMomentum: number;
+    oecdTrend: string;
     spyHistory: number[];
     aggregateRiskScore: number;
     upcomingEvents: { name: string; daysUntil: number; description: string }[];
 }
+
+export const RISK_THRESHOLDS_OECD = {
+    momentum: 0
+};
 
 function getScore(value: number, threshold1: number, threshold2: number, invert: boolean = false): number {
     if (invert) {
@@ -61,7 +67,7 @@ function calculateSMA(data: number[], period: number): number {
     return sum / period;
 }
 
-export async function fetchMarketData(env: Env): Promise<MarketData> {
+export async function fetchMarketData(env: Env, externalData?: any): Promise<MarketData> {
     const AV_KEY = env.AV_KEY;
     const FRED_KEY = env.FRED_KEY;
 
@@ -78,7 +84,8 @@ export async function fetchMarketData(env: Env): Promise<MarketData> {
         oneMonthData,
         spyPrice,
         spyHistory,
-        currentPeRatio
+        currentPeRatio,
+        oecdResult
     ] = await Promise.all([
         fetchFredSeries('VIXCLS', FRED_KEY).catch(e => ({ value: 16.5, date: 'mock' })), // Fallback to safe defaults if API fails
         fetchFredSeries('DGS10', FRED_KEY).catch(e => ({ value: 4.0, date: 'mock' })),
@@ -89,8 +96,10 @@ export async function fetchMarketData(env: Env): Promise<MarketData> {
         fetchFredSeries('JLNUM1M', FRED_KEY).catch(e => ({ value: 3.0, date: 'mock' })),
         avClient.getGlobalQuote('SPY').catch(e => 500),
         avClient.getDailyCloses('SPY', 'full').catch(e => []),
-        scrapeSP500PE().catch(e => 29.5)
+        scrapeSP500PE().catch(e => 29.5),
+        externalData?.oecd ? Promise.resolve(externalData.oecd) : fetchIndicatorBridge().catch(e => ({ latest_value: 100, momentum: 0, trend: 'stable' }))
     ]);
+
 
     // 2. Process Calculations
     const currentVix = vixData.value;
@@ -134,10 +143,14 @@ export async function fetchMarketData(env: Env): Promise<MarketData> {
         cfnaiScore: getScore(cfnaiData.value, RISK_THRESHOLDS.cfnai, -1.5, true),
         liquidityScore: getScore(liquidityTrillions, RISK_THRESHOLDS.liquidity, 4.0, true),
         oneMonthAheadScore: getScore(oneMonthData.value, RISK_THRESHOLDS.oneMonthAhead, 0, true),
+        oecdValue: (oecdResult as any).latest_value || 100,
+        oecdMomentum: (oecdResult as any).momentum || 0,
+        oecdTrend: (oecdResult as any).trend || 'stable',
         spyHistory: spyHistory,
         aggregateRiskScore: 0,
         upcomingEvents: getUpcomingEvents()
     };
+
 
     // Calculate final aggregate score
     data.aggregateRiskScore =
@@ -152,4 +165,17 @@ export async function fetchMarketData(env: Env): Promise<MarketData> {
         data.oneMonthAheadScore;
 
     return data;
+}
+//  helper bridge to indicators
+export async function fetchIndicatorBridge() {
+    try {
+        // In local dev, this is your FastAPI server. 
+        // In prod, you'd replace this with your hosted Python API URL.
+        const response = await fetch('http://localhost:8080/indicators/oecd');
+        const data = await response.json();
+        return data;
+    } catch (e) {
+        console.warn("Indicator bridge unreachable, using fallback");
+        return { momentum: 0, trend: 'stable' };
+    }
 }

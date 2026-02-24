@@ -24,5 +24,10 @@ export const marketMetrics = pgTable('market_metrics', {
     liquidity: decimal('central_bank_liquidity', { precision: 12, scale: 2 }),
     oneMonthAhead: decimal('one_month_ahead', { precision: 10, scale: 2 }),
     marketMode: text('market_mode'),
+    sentiment: text('sentiment'),
+    oecdValue: decimal('oecd_value', { precision: 10, scale: 4 }),
+    oecdMomentum: decimal('oecd_momentum', { precision: 10, scale: 6 }),
+    oecdTrend: text('oecd_trend'),
+    aggregateRiskScore: integer('aggregate_risk_score'),
     rawJson: jsonb('raw_json'),
 });

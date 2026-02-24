@@ -36,5 +36,8 @@ export const marketMetrics = pgTable('market_metrics', {
     aggregateRiskScore: integer('aggregate_risk_score'),
     marketMode: text('market_mode'),
     sentiment: text('sentiment'), // AI-generated summary
+    oecdValue: decimal('oecd_value', { precision: 10, scale: 4 }),
+    oecdMomentum: decimal('oecd_momentum', { precision: 10, scale: 6 }),
+    oecdTrend: text('oecd_trend'), // improving/declining
     rawJson: jsonb('raw_json'),
 });

@@ -23,6 +23,9 @@ interface MarketMetrics {
     marginDebt: string;
     insiderActivity: string;
     cfnai: string;
+    oecdValue: string;
+    oecdMomentum: string;
+    oecdTrend: string;
     sentiment?: string;
     createdAt: string;
 }
@@ -34,6 +37,7 @@ const METRIC_DEFINITIONS = [
     { id: "liq", label: "Liquidity", key: "liquidity", suffix: "T", threshold: 5, invert: true, color: "#10b981" },
     { id: "junk", label: "Junk Bond Spread", key: "junkBondSpread", suffix: "bps", threshold: 500, color: "#a855f7" },
     { id: "cfnai", label: "CFNAI (Macro)", key: "cfnai", suffix: "", threshold: -0.7, invert: true, color: "#f97316" },
+    { id: "oecd", label: "OECD CLI (Global)", key: "oecdMomentum", suffix: "", threshold: 0, invert: true, color: "#06b6d4" },
 ];
 
 export default function Dashboard() {
@@ -65,7 +69,8 @@ export default function Dashboard() {
                         sp500pe: Number(item.sp500pe),
                         liquidity: Number(item.liquidity),
                         junkBondSpread: Number(item.junkBondSpread),
-                        cfnai: Number(item.cfnai)
+                        cfnai: Number(item.cfnai),
+                        oecdMomentum: Number(item.oecdMomentum)
                     }));
                     setHistory(processed);
                 }
@@ -185,8 +190,19 @@ export default function Dashboard() {
                                 </div>
                                 <div className="flex items-baseline gap-1">
                                     <h3 className={`text-xl font-bold ${metrics ? getRiskColor(val, def.threshold, def.invert) : 'text-zinc-400'}`}>
-                                        {displayVal}<span className="text-xs font-normal text-zinc-500 ml-0.5">{def.suffix}</span>
+                                        {def.id === 'oecd' ? (val > 0 ? 'Positive' : 'Negative') : displayVal}
+                                        <span className="text-xs font-normal text-zinc-500 ml-0.5">{def.suffix}</span>
                                     </h3>
+                                    {def.id === 'oecd' && metrics && (
+                                        <div className="mt-1 flex flex-col gap-0.5">
+                                            <div className="text-[9px] uppercase font-bold text-zinc-500">
+                                                Trend: <span className={metrics.oecdTrend === 'improving' ? 'text-green-500' : 'text-red-500'}>{metrics.oecdTrend}</span>
+                                            </div>
+                                            <div className="text-[9px] uppercase font-bold text-zinc-500">
+                                                Level: <span className="text-zinc-300">{metrics.oecdValue}</span>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         );
@@ -222,6 +238,11 @@ export default function Dashboard() {
                                     <div className="text-right">
                                         <p className="text-xs text-zinc-500">Risk Threshold</p>
                                         <p className="text-xs font-mono text-zinc-400">{def.invert ? '<' : '>'}{def.threshold}</p>
+                                        {def.id === 'oecd' && metrics && (
+                                            <div className={`mt-2 px-2 py-0.5 rounded text-[10px] font-bold uppercase ${metrics.oecdTrend === 'improving' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
+                                                {metrics.oecdTrend}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
