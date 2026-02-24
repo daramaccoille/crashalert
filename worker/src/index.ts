@@ -97,6 +97,19 @@ export default {
                     const metricCharts: Record<string, string> = {};
                     try {
                         const history = await db.select().from(marketMetrics).orderBy(desc(marketMetrics.createdAt)).limit(30);
+
+                        const metricColors: Record<string, string> = {
+                            'vix': '#ef4444',
+                            'yieldSpread': '#eab308',
+                            'sp500pe': '#3b82f6',
+                            'liquidity': '#10b981',
+                            'junkBondSpread': '#a855f7',
+                            'cfnai': '#f97316',
+                            'marginDebt': '#D4AF37',
+                            'insiderActivity': '#D4AF37',
+                            'oneMonthAhead': '#10b981'
+                        };
+
                         const metrics = [
                             { label: 'VIX', key: 'vix' as const },
                             { label: 'Spread', key: 'yieldSpread' as const },
@@ -113,7 +126,6 @@ export default {
                             const values = history.map(h => Number(h[m.key]) || 0).reverse();
                             if (values.length === 0) values.push(Number(data[m.key as keyof typeof data]) || 0);
 
-                            // Map the key to the official threshold
                             const thresholdKey = m.key === 'yieldSpread' ? 'yieldSpread' :
                                 m.key === 'sp500pe' ? 'sp500pe' :
                                     m.key === 'junkBondSpread' ? 'junkBondSpread' :
@@ -125,7 +137,7 @@ export default {
                                                             'vix';
 
                             const threshold = RISK_THRESHOLDS[thresholdKey as keyof typeof RISK_THRESHOLDS];
-                            metricCharts[m.label] = generateMetricChartUrl(values, threshold);
+                            metricCharts[m.label] = generateMetricChartUrl(values, threshold, metricColors[m.key] || '#D4AF37');
                         });
                     } catch (e) { console.error("Indicator charts failed", e); }
 
@@ -243,6 +255,18 @@ export default {
                 expertRiskChartUrl = generateExpertRiskChartUrl(riskScores);
 
                 // 2. 9 Individual Indicator Sparklines
+                const metricColors: Record<string, string> = {
+                    'vix': '#ef4444',
+                    'yieldSpread': '#eab308',
+                    'sp500pe': '#3b82f6',
+                    'liquidity': '#10b981',
+                    'junkBondSpread': '#a855f7',
+                    'cfnai': '#f97316',
+                    'marginDebt': '#D4AF37',
+                    'insiderActivity': '#D4AF37',
+                    'oneMonthAhead': '#10b981'
+                };
+
                 const metrics = [
                     { label: 'VIX', key: 'vix' as const },
                     { label: 'Spread', key: 'yieldSpread' as const },
@@ -269,7 +293,7 @@ export default {
                                                     'vix';
 
                     const threshold = RISK_THRESHOLDS[thresholdKey as keyof typeof RISK_THRESHOLDS];
-                    metricCharts[m.label] = generateMetricChartUrl(values, threshold);
+                    metricCharts[m.label] = generateMetricChartUrl(values, threshold, metricColors[m.key] || '#D4AF37');
                 });
             } catch (e) {
                 console.error("Failed to generate Expert visuals:", e);

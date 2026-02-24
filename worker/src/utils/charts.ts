@@ -5,27 +5,18 @@ export function generateTrendChartUrl(
     upperBound: number,
     lowerBound: number
 ): string {
-    // QuickChart API URL
     const baseUrl = "https://quickchart.io/chart";
-
-    // Construct labels: Past 30 days + "Tomorrow"
     const labels = [...history.map((_, i) => `D-${history.length - i}`), "Tomorrow"];
 
-    // Data Series 1: History (ending at T-0)
-    const historyData = [...history, null]; // append null for prediction slot
-
-    // Data Series 2: Prediction (only at T+1)
-    // We assume the last point of history connects to prediction? 
-    // Better visual: [..., lastVal, prediction]
     const lastVal = history[history.length - 1];
+    const historyData = [...history, null];
+
     const predictionData = Array(history.length).fill(null);
     predictionData[history.length - 1] = lastVal;
     predictionData.push(prediction);
 
-    // Data Series 3: Upper Bound (Line or Band)
-    // Simple implementation: Dotted line for bounds on the prediction day
     const upperData = Array(history.length).fill(null);
-    upperData[history.length - 1] = lastVal; // Anchor
+    upperData[history.length - 1] = lastVal;
     upperData.push(upperBound);
 
     const lowerData = Array(history.length).fill(null);
@@ -40,7 +31,7 @@ export function generateTrendChartUrl(
                 {
                     label: label,
                     data: historyData,
-                    borderColor: 'rgb(255, 255, 255)', // White line
+                    borderColor: '#ffffff',
                     borderWidth: 2,
                     fill: false,
                     pointRadius: 0,
@@ -48,7 +39,7 @@ export function generateTrendChartUrl(
                 {
                     label: 'Prediction',
                     data: predictionData,
-                    borderColor: 'rgb(16, 185, 129)', // Green
+                    borderColor: '#10b981', // Green
                     borderDash: [5, 5],
                     borderWidth: 2,
                     fill: false,
@@ -56,7 +47,7 @@ export function generateTrendChartUrl(
                 {
                     label: 'Upper Limit',
                     data: upperData,
-                    borderColor: 'rgb(239, 68, 68)', // Red
+                    borderColor: '#ef4444', // Red
                     borderWidth: 1,
                     borderDash: [2, 2],
                     pointRadius: 0,
@@ -64,7 +55,7 @@ export function generateTrendChartUrl(
                 {
                     label: 'Lower Limit',
                     data: lowerData,
-                    borderColor: 'rgb(239, 68, 68)',
+                    borderColor: '#ef4444',
                     borderWidth: 1,
                     borderDash: [2, 2],
                     pointRadius: 0,
@@ -75,29 +66,26 @@ export function generateTrendChartUrl(
             maintainAspectRatio: false,
             legend: {
                 display: true,
-                labels: { fontColor: '#ccc' }
+                labels: { fontColor: '#a1a1aa', fontSize: 10 }
             },
             scales: {
-                xAxes: [{
-                    display: false, // Hide messy dates
-                    gridLines: { display: false }
-                }],
+                xAxes: [{ display: false }],
                 yAxes: [{
-                    gridLines: { color: 'rgba(255,255,255,0.1)' },
-                    ticks: { fontColor: '#999' }
+                    gridLines: { color: 'rgba(255,255,255,0.05)' },
+                    ticks: { fontColor: '#71717a', fontSize: 10 }
                 }]
             }
         }
     };
 
-    // Encode URL
-    return `${baseUrl}?c=${encodeURIComponent(JSON.stringify(config))}&backgroundColor=transparent&width=500&height=300&format=png`;
+    return `${baseUrl}?c=${encodeURIComponent(JSON.stringify(config))}&backgroundColor=%23050505&width=500&height=300&format=png`;
 }
 
 export function generateMetricChartUrl(
     history: number[],
     threshold: number,
-    color: string = 'rgb(212, 175, 55)'
+    color: string = '#D4AF37', // Gold default
+    isDark: boolean = true
 ): string {
     const baseUrl = "https://quickchart.io/chart";
     const labels = history.map((_, i) => i);
@@ -110,16 +98,16 @@ export function generateMetricChartUrl(
                 {
                     data: history,
                     borderColor: color,
-                    borderWidth: 2,
+                    borderWidth: 3,
                     fill: false,
                     pointRadius: 0,
-                    tension: 0.1
+                    tension: 0.3
                 },
                 {
                     data: Array(history.length).fill(threshold),
-                    borderColor: 'rgba(239, 68, 68, 0.4)', // Faded Red
+                    borderColor: 'rgba(239, 68, 68, 0.4)',
                     borderDash: [3, 3],
-                    borderWidth: 1,
+                    borderWidth: 1.5,
                     fill: false,
                     pointRadius: 0
                 }
@@ -132,17 +120,17 @@ export function generateMetricChartUrl(
                 xAxes: [{ display: false }],
                 yAxes: [{
                     display: false,
-                    // Ensure the threshold is always visible in the Y-axis range
                     ticks: {
-                        suggestedMin: Math.min(...history, threshold) * 0.9,
-                        suggestedMax: Math.max(...history, threshold) * 1.1
+                        suggestedMin: Math.min(...history, threshold) * 0.95,
+                        suggestedMax: Math.max(...history, threshold) * 1.05
                     }
                 }]
             }
         }
     };
 
-    return `${baseUrl}?c=${encodeURIComponent(JSON.stringify(config))}&backgroundColor=transparent&width=150&height=50&format=png`;
+    const bgColor = isDark ? '%23050505' : 'transparent';
+    return `${baseUrl}?c=${encodeURIComponent(JSON.stringify(config))}&backgroundColor=${bgColor}&width=200&height=80&format=png`;
 }
 
 export function generateExpertRiskChartUrl(
@@ -159,16 +147,17 @@ export function generateExpertRiskChartUrl(
                 {
                     label: 'Aggregate Risk Score',
                     data: history,
-                    borderColor: '#D4AF37', // Gold
+                    borderColor: '#D4AF37',
                     backgroundColor: 'rgba(212, 175, 55, 0.1)',
                     fill: true,
                     tension: 0.4,
-                    pointRadius: 2,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#D4AF37'
                 },
                 {
                     label: 'Warning Threshold (5)',
                     data: Array(history.length).fill(5),
-                    borderColor: 'rgba(239, 68, 68, 0.5)', // Transparent Red
+                    borderColor: 'rgba(239, 68, 68, 0.5)',
                     borderDash: [5, 5],
                     fill: false,
                     pointRadius: 0,
@@ -177,9 +166,10 @@ export function generateExpertRiskChartUrl(
         },
         options: {
             maintainAspectRatio: false,
+            legend: { labels: { fontColor: '#a1a1aa' } },
             scales: {
                 yAxes: [{
-                    ticks: { min: 0, max: 18, fontColor: '#999' },
+                    ticks: { min: 0, max: 18, fontColor: '#71717a', fontSize: 10 },
                     gridLines: { color: 'rgba(255,255,255,0.05)' }
                 }],
                 xAxes: [{ display: false }]
@@ -187,5 +177,6 @@ export function generateExpertRiskChartUrl(
         }
     };
 
-    return `${baseUrl}?c=${encodeURIComponent(JSON.stringify(config))}&backgroundColor=transparent&width=500&height=250&format=png`;
+    return `${baseUrl}?c=${encodeURIComponent(JSON.stringify(config))}&backgroundColor=%23050505&width=600&height=300&format=png`;
 }
+

@@ -214,35 +214,33 @@ export function getProEmailHtml(data: MarketData): string {
   `;
 }
 
+const darkCardStyle = `
+  background-color: #050505;
+  border: 1px solid #27272a;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+`;
+
 export function getExpertEmailHtml(data: MarketData, spyChartUrl: string, riskChartUrl: string, metricCharts: Record<string, string>): string {
   const riskColor = getScoreColor(data.aggregateRiskScore >= 5 ? 2 : (data.aggregateRiskScore >= 3 ? 1 : 0));
 
   const eventRows = data.upcomingEvents.map(event => `
-    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
-      <span style="font-size: 13px; color: #333; font-weight: 500;">${event.name}</span>
-      <span style="font-size: 12px; color: ${event.daysUntil <= 2 ? '#EF4444' : '#666'}; font-weight: bold;">
+    <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #27272a;">
+      <span style="font-size: 13px; color: #e4e4e7; font-weight: 500;">${event.name}</span>
+      <span style="font-size: 12px; color: ${event.daysUntil <= 2 ? '#EF4444' : '#71717a'}; font-weight: bold;">
         ${event.daysUntil === 0 ? 'TODAY' : `In ${event.daysUntil} days`}
       </span>
     </div>
   `).join('');
 
-  // S&P Projection section - handle missing chartUrl
-  const projectionSection = `
-    <div style="${cardStyle}">
-      <h3 style="margin: 0 0 12px; font-size: 12px; text-transform: uppercase; color: #888; letter-spacing: 1px;">S&P 500 Market Projection</h3>
-      ${spyChartUrl ? `<img src="${spyChartUrl}" alt="Price Forecast" style="width:100%; border-radius: 4px;" />` : `<div style="padding: 40px; background: #fafafa; text-align: center; color: #999; border: 1px dashed #ddd;">Projection calibrating...</div>`}
-    </div>
-  `;
-
-  // All 9 Metric Charts in a grid
   const chartItems = Object.entries(metricCharts).map(([label, url]) => `
-    <div style="display: inline-block; width: 30%; margin: 1%; vertical-align: top; border: 1px solid #f0f0f0; border-radius: 4px; background: #fff;">
-      <div style="padding: 4px; font-size: 9px; font-weight: bold; color: #888; border-bottom: 1px solid #f0f0f0; background: #fafafa; white-space: nowrap; overflow: hidden;">${label}</div>
+    <div style="display: inline-block; width: 30%; margin: 1%; vertical-align: top; border: 1px solid #27272a; border-radius: 6px; background: #050505; overflow: hidden;">
+      <div style="padding: 6px; font-size: 10px; font-weight: bold; color: #71717a; border-bottom: 1px solid #27272a; background: #09090b; text-transform: uppercase; letter-spacing: 0.5px;">${label}</div>
       <img src="${url}" style="width: 100%; display: block;" />
     </div>
   `).join('');
 
-  // Sorted Metrics Terminal (Risk First)
   const metricsList = [
     { label: 'VIX', value: data.vix.toFixed(2), score: data.vixScore },
     { label: 'Yield Spread', value: data.yieldSpread.toFixed(2), score: data.yieldSpreadScore },
@@ -267,43 +265,46 @@ export function getExpertEmailHtml(data: MarketData, spyChartUrl: string, riskCh
         
         <div style="${contentStyle}">
           
-          <div style="display: flex; align-items: start; gap: 20px; background: #000; color: #fff; padding: 24px; border-radius: 8px; margin-bottom: 24px; border-left: 5px solid ${riskColor};">
+          <div style="display: flex; align-items: start; gap: 20px; background: #000; color: #fff; padding: 24px; border-radius: 8px; margin-bottom: 24px; border-left: 5px solid ${riskColor}; box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
              <div style="flex: 1;">
-               <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #aaa; margin-bottom: 4px;">Expert Risk Signal</div>
+               <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #71717a; margin-bottom: 4px;">Expert Risk Signal</div>
                <div style="font-size: 28px; font-weight: 900; color: ${getModeColor(data.marketMode)};">${data.marketMode}</div>
              </div>
              <div style="text-align: right;">
-               <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #aaa; margin-bottom: 4px;">Aggregate Score</div>
-               <div style="font-size: 32px; font-weight: 900; color: ${riskColor};">${data.aggregateRiskScore}<span style="font-size: 14px; font-weight: 400; color: #666;">/18</span></div>
+               <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #71717a; margin-bottom: 4px;">Aggregate Score</div>
+               <div style="font-size: 32px; font-weight: 900; color: ${riskColor};">${data.aggregateRiskScore}<span style="font-size: 14px; font-weight: 400; color: #52525b;">/18</span></div>
              </div>
           </div>
 
-          <div style="${cardStyle}">
-            <h3 style="margin: 0 0 16px; font-size: 12px; text-transform: uppercase; color: #888; letter-spacing: 1px;">Expert Risk Trend (30D)</h3>
+          <div style="${darkCardStyle}">
+            <h3 style="margin: 0 0 16px; font-size: 11px; text-transform: uppercase; color: #71717a; letter-spacing: 1px; font-weight: 700;">Expert Risk Trend (30D)</h3>
             <img src="${riskChartUrl}" alt="Risk Trend Graph" style="width:100%; border-radius: 4px;" />
           </div>
 
-          ${projectionSection}
+          <div style="${darkCardStyle}">
+            <h3 style="margin: 0 0 12px; font-size: 11px; text-transform: uppercase; color: #71717a; letter-spacing: 1px; font-weight: 700;">S&P 500 Market Projection</h3>
+            ${spyChartUrl ? `<img src="${spyChartUrl}" alt="Price Forecast" style="width:100%; border-radius: 4px;" />` : `<div style="padding: 40px; background: #09090b; text-align: center; color: #52525b; border: 1px dashed #27272a;">Projection calibrating...</div>`}
+          </div>
 
-          <div style="${cardStyle}">
-            <h3 style="margin: 0 0 12px; font-size: 12px; text-transform: uppercase; color: #888; letter-spacing: 1px;">Multi-Indicator Visuals</h3>
+          <div style="${darkCardStyle}">
+            <h3 style="margin: 0 0 16px; font-size: 11px; text-transform: uppercase; color: #71717a; letter-spacing: 1px; font-weight: 700;">Multi-Indicator Visuals</h3>
             <div style="text-align: center;">
               ${chartItems}
             </div>
           </div>
 
-          <div style="${cardStyle} background: #fafafa;">
-             <h3 style="margin: 0 0 12px; font-size: 12px; text-transform: uppercase; color: #888; letter-spacing: 1px;">Forthcoming Events</h3>
+          <div style="${darkCardStyle}">
+             <h3 style="margin: 0 0 16px; font-size: 11px; text-transform: uppercase; color: #71717a; letter-spacing: 1px; font-weight: 700;">Institutional AI Strategist</h3>
+             <div style="font-style: italic; color: #e4e4e7; font-size: 16px; line-height: 1.6; border-left: 3px solid #D4AF37; padding-left: 16px; margin: 10px 0;">"${data.sentiment}"</div>
+          </div>
+
+          <div style="${darkCardStyle}">
+             <h3 style="margin: 0 0 12px; font-size: 11px; text-transform: uppercase; color: #71717a; letter-spacing: 1px; font-weight: 700;">Forthcoming Events</h3>
              ${eventRows}
           </div>
 
-          <div style="background: #fdfcf5; padding: 20px; border-radius: 8px; border: 1px solid #D4AF37; margin-bottom: 24px;">
-               <div style="font-size: 12px; font-weight: bold; color: #D4AF37; text-transform: uppercase; margin-bottom: 8px;">🤖 Institutional AI Strategist</div>
-               <div style="font-style: italic; color: #1a1a1a; font-size: 16px; line-height: 1.6;">"${data.sentiment}"</div>
-          </div>
-
           <div style="${cardStyle}">
-            <h3 style="margin: 0 0 16px; font-size: 12px; text-transform: uppercase; color: #888; letter-spacing: 1px; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px;">Sorted Risk Terminal (Risky First)</h3>
+            <h3 style="margin: 0 0 16px; font-size: 12px; text-transform: uppercase; color: #888; letter-spacing: 1px; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px;">Sorted Risk Terminal</h3>
             ${sortedRows}
           </div>
 
@@ -312,7 +313,7 @@ export function getExpertEmailHtml(data: MarketData, spyChartUrl: string, riskCh
 
         <div style="${footerStyle}">
           <p>Expert Terminal Intelligence. Priority Institutional Stream.</p>
-          <p>© ${new Date().getFullYear()} CrashAlert.</p>
+          <p>© ${new Date().getFullYear()} CrashAlert.online</p>
         </div>
       </div>
     </div>
