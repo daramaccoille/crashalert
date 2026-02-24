@@ -4,10 +4,13 @@ import numpy as np
 import io
 import os
 from datetime import datetime
+from dotenv import load_dotenv
+
+# Load environment variables from the root .env file
+load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 
 # CONFIGURATION
-# Set your production URL here, or use localhost for dev
-WORKER_URL = "http://crashalert.online/trigger-update" 
+WORKER_URL = os.getenv("INDICATOR_WORKER_URL", "http://localhost:8787/trigger-update")
 OECD_URL = "https://sdmx.oecd.org/public/rest/data/OECD.SDD.STES,DSD_STES@DF_CLI,4.1/G20.M.LI...AA...H?dimensionAtObservation=AllDimensions&format=csvfilewithlabels"
 
 def harvest_oecd():
