@@ -7,6 +7,20 @@ import { subscribers, marketMetrics } from './schema';
 import { getBasicEmailHtml, getProEmailHtml, getExpertEmailHtml } from './templates/email-templates';
 import { eq, desc } from 'drizzle-orm';
 
+interface CalendarEvent { title: string; country: string; date: string; impact: string; forecast: string; previous: string; actual?: string; }
+async function fetchEconomicCalendar(): Promise<{past: CalendarEvent[], future: CalendarEvent[]}> {
+    try {
+        const res = await fetch('https://nfs.faireconomy.media/ff_calendar_thismonth.json');
+        if (!res.ok) return {past: [], future: []};
+        const items = await res.json() as CalendarEvent[];
+        const highImpact = items.filter(e => e.impact === 'High' && (e.country === 'USD' || e.country === 'EUR' || e.country === 'GBP' || e.country === 'JPY'));
+        const now = new Date();
+        const past = highImpact.filter(e => new Date(e.date) < now).slice(-3);
+        const future = highImpact.filter(e => new Date(e.date) > now).slice(0, 3);
+        return { past, future };
+    } catch(e) { return {past: [], future: []}; }
+}
+
 export interface Env {
     DATABASE_URL: string;
     STRIPE_KEY: string;
@@ -35,6 +49,7 @@ export default {
                 console.log("DEBUG: Final Sentiment for Email:", aiResult.sentiment);
                 data.sentiment = aiResult.sentiment;
                 (data as any).newsStats = aiResult.newsStats;
+                (data as any).calendar = await fetchEconomicCalendar();
 
                 // 2. Save to DB
                 const db = getDb(env.DATABASE_URL);
@@ -186,6 +201,7 @@ export default {
             console.log("DEBUG: Generated Sentiment:", aiResult.sentiment);
             data.sentiment = aiResult.sentiment;
             (data as any).newsStats = aiResult.newsStats;
+            (data as any).calendar = await fetchEconomicCalendar();
 
             // 1. Save to DB
             const db = getDb(env.DATABASE_URL);

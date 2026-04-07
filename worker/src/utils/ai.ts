@@ -19,6 +19,13 @@ export async function generateMarketSentiment(data: MarketData, env: Env): Promi
             const newsRes = await fetch(`https://www.alphavantage.co/query?function=NEWS_SENTIMENT&limit=50&apikey=${env.AV_KEY}`);
             if (newsRes.ok) {
                 const newsData: any = await newsRes.json();
+                
+                // Catch rate limit or error messages from Alpha Vantage
+                if (newsData.Information || newsData['Error Message']) {
+                    console.error("AlphaVantage API Error/Rate Limit:", newsData.Information || newsData['Error Message']);
+                    newsStats.overallLabel = "Rate-Limited";
+                }
+                
                 if (newsData.feed && Array.isArray(newsData.feed)) {
                     const articles = newsData.feed;
                     let recentSummary = [];

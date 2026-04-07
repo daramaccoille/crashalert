@@ -31,6 +31,7 @@ interface MarketMetrics {
     sentiment?: string;
     rawJson?: {
         newsStats?: { counts: Record<string, number>, overallLabel: string };
+        calendar?: { past: any[], future: any[] };
         [key: string]: any;
     };
     createdAt: string;
@@ -174,6 +175,53 @@ export default function Dashboard() {
                                             <Bar dataKey="value" radius={[2, 2, 0, 0]} />
                                         </BarChart>
                                     </ResponsiveContainer>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Economic Calendar */}
+                        {metrics.rawJson?.calendar && (metrics.rawJson.calendar.past.length > 0 || metrics.rawJson.calendar.future.length > 0) && (
+                            <div className="mt-8 pt-6 border-t border-yellow-500/20">
+                                <h3 className="text-sm font-bold text-yellow-500 uppercase tracking-wider mb-4">Major Economic Calendar</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {/* Past Events */}
+                                    <div className="bg-black/20 p-4 rounded-xl border border-yellow-500/10">
+                                        <h4 className="text-xs font-mono uppercase text-zinc-500 mb-3">Recent High-Impact Events</h4>
+                                        <div className="space-y-4">
+                                            {metrics.rawJson.calendar.past.map((ev: any, idx: number) => (
+                                                <div key={idx} className="flex justify-between items-center text-sm border-b border-zinc-800/50 pb-2 last:border-0 last:pb-0">
+                                                    <div>
+                                                        <div className="text-zinc-300 font-medium truncate max-w-[150px]" title={ev.title}>{ev.title} <span className="text-[10px] text-zinc-500 ml-1">{ev.country}</span></div>
+                                                        <div className="text-[10px] text-zinc-500">{new Date(ev.date).toLocaleDateString(undefined, {month:'short', day:'numeric'})}</div>
+                                                    </div>
+                                                    <div className="text-right text-xs shrink-0">
+                                                        <div className="text-zinc-200">Act: <span className="font-mono">{ev.actual ? ev.actual : 'TBD'}</span></div>
+                                                        <div className="text-zinc-500">Prev/Fcst: <span className="font-mono">{ev.previous || '-'} / {ev.forecast || '-'}</span></div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            {metrics.rawJson.calendar.past.length === 0 && <span className="text-xs text-zinc-500">No recent major events.</span>}
+                                        </div>
+                                    </div>
+
+                                    {/* Future Events */}
+                                    <div className="bg-black/20 p-4 rounded-xl border border-yellow-500/10">
+                                        <h4 className="text-xs font-mono uppercase text-zinc-500 mb-3">Upcoming High-Impact Events</h4>
+                                        <div className="space-y-4">
+                                            {metrics.rawJson.calendar.future.map((ev: any, idx: number) => (
+                                                <div key={idx} className="flex justify-between items-center text-sm border-b border-zinc-800/50 pb-2 last:border-0 last:pb-0">
+                                                    <div>
+                                                        <div className="text-zinc-300 font-medium truncate max-w-[150px]" title={ev.title}>{ev.title} <span className="text-[10px] text-zinc-500 ml-1">{ev.country}</span></div>
+                                                        <div className="text-[10px] text-zinc-500">{new Date(ev.date).toLocaleDateString(undefined, {month:'short', day:'numeric'})}</div>
+                                                    </div>
+                                                    <div className="text-right text-xs shrink-0 mt-2">
+                                                        <div className="text-zinc-500">Prev/Fcst: <span className="font-mono">{ev.previous || '-'} / {ev.forecast || '-'}</span></div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            {metrics.rawJson.calendar.future.length === 0 && <span className="text-xs text-zinc-500">No upcoming major events.</span>}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         )}
