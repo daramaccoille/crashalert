@@ -1,24 +1,43 @@
 import { Env } from '../index';
 import { MarketData } from '../market';
 
-export async function generateMarketSentiment(data: MarketData, env: Env): Promise<{ sentiment: string, events: any[] }> {
+export async function generateMarketSentiment(data: MarketData, env: Env): Promise<{ sentiment: string, newsStats: any }> {
     const apiKey = env.GEMINI_KEY?.trim();
     if (!apiKey) {
         console.warn("GEMINI_KEY missing, skipping sentiment generation.");
-        return { sentiment: "Market sentiment analysis currently unavailable.", events: [] };
+        return { sentiment: "Market sentiment analysis currently unavailable.", newsStats: null };
     }
 
     let newsSummary = "No recent major news.";
+    const newsStats = {
+        counts: { "Bearish": 0, "Somewhat-Bearish": 0, "Neutral": 0, "Somewhat-Bullish": 0, "Bullish": 0 },
+        overallLabel: "Neutral"
+    };
+
     if (env.AV_KEY) {
         try {
-            const newsRes = await fetch(`https://www.alphavantage.co/query?function=NEWS_SENTIMENT&limit=10&apikey=${env.AV_KEY}`);
+            const newsRes = await fetch(`https://www.alphavantage.co/query?function=NEWS_SENTIMENT&limit=50&apikey=${env.AV_KEY}`);
             if (newsRes.ok) {
                 const newsData: any = await newsRes.json();
                 if (newsData.feed && Array.isArray(newsData.feed)) {
-                    newsSummary = newsData.feed
-                        .slice(0, 10)
-                        .map((f: any) => `- ${f.title}`)
-                        .join('\n');
+                    const articles = newsData.feed;
+                    let recentSummary = [];
+                    for (let i = 0; i < articles.length; i++) {
+                        let label = articles[i].overall_sentiment_label;
+                        if ((newsStats.counts as any)[label] !== undefined) {
+                            (newsStats.counts as any)[label]++;
+                        }
+                        if (i < 7) recentSummary.push(`- ${articles[i].title} (${label})`);
+                    }
+                    newsSummary = recentSummary.join("\n");
+
+                    let maxFreq = 0;
+                    Object.keys(newsStats.counts).forEach(key => {
+                        if ((newsStats.counts as any)[key] > maxFreq) {
+                            maxFreq = (newsStats.counts as any)[key];
+                            newsStats.overallLabel = key;
+                        }
+                    });
                 }
             }
         } catch (e) {
@@ -28,9 +47,8 @@ export async function generateMarketSentiment(data: MarketData, env: Env): Promi
 
     const prompt = `
     Analyze the following market metrics and recent financial news.
-    You must output a JSON object with exactly two keys:
-    1. "sentiment": A professional 1-2 sentence market sentiment summary (max 30 words). Focus on risk level and describe current macroeconomic or geopolitical narratives (e.g. wars, tech bubbles) if present.
-    2. "events": Extract exactly the 3 main past, present, or future qualitative news events currently affecting the market from the news. Each event must be an object: {"title": "concise description max 10 words", "timeframe": "past" | "future" | "current"}.
+    You must output a JSON object with exactly one key:
+    1. "sentiment": A professional 1-2 sentence market sentiment summary (max 30 words). Focus on risk level and describe current macroeconomic or geopolitical narratives if present.
     
     Metrics:
     - VIX: ${data.vix} (Score: ${data.vixScore})
@@ -41,6 +59,7 @@ export async function generateMarketSentiment(data: MarketData, env: Env): Promi
 
     Recent Top Financial News:
     ${newsSummary}
+    News Sentiment Overview Mode: ${newsStats.overallLabel}
     `;
 
     try {
@@ -48,15 +67,14 @@ export async function generateMarketSentiment(data: MarketData, env: Env): Promi
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                system_instruction: { parts: [{ text: "You are a financial analyst. Always output pure, valid JSON with keys 'sentiment' and 'events'. Do not wrap in markdown code blocks." }] },
+                system_instruction: { parts: [{ text: "You are a financial analyst. Always output pure, valid JSON with a single key 'sentiment'. Do not wrap in markdown code blocks." }] },
                 contents: [{ parts: [{ text: prompt }] }],
                 generationConfig: { response_mime_type: "application/json" }
             })
         });
 
         if (!response.ok) {
-            const errorBody = await response.text();
-            throw new Error(`Gemini API Error: ${response.status} ${response.statusText} - ${errorBody}`);
+            throw new Error(`Gemini API Error: ${response.status}`);
         }
 
         const json: any = await response.json();
@@ -66,11 +84,11 @@ export async function generateMarketSentiment(data: MarketData, env: Env): Promi
         const parsed = JSON.parse(rawText);
         return { 
             sentiment: parsed.sentiment || "Market conditions are stable.", 
-            events: parsed.events || [] 
+            newsStats 
         };
 
     } catch (error) {
         console.error("Error generating sentiment:", error);
-        return { sentiment: "Market data processing complete.", events: [] };
+        return { sentiment: "Market data processing complete.", newsStats };
     }
 }

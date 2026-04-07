@@ -34,7 +34,7 @@ export default {
                 const aiResult = await generateMarketSentiment(data, env);
                 console.log("DEBUG: Final Sentiment for Email:", aiResult.sentiment);
                 data.sentiment = aiResult.sentiment;
-                (data as any).events = aiResult.events;
+                (data as any).newsStats = aiResult.newsStats;
 
                 // 2. Save to DB
                 const db = getDb(env.DATABASE_URL);
@@ -185,7 +185,7 @@ export default {
             const aiResult = await generateMarketSentiment(data, env);
             console.log("DEBUG: Generated Sentiment:", aiResult.sentiment);
             data.sentiment = aiResult.sentiment;
-            (data as any).events = aiResult.events;
+            (data as any).newsStats = aiResult.newsStats;
 
             // 1. Save to DB
             const db = getDb(env.DATABASE_URL);

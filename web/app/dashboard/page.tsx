@@ -5,6 +5,8 @@ import Link from "next/link";
 import {
     LineChart,
     Line,
+    BarChart,
+    Bar,
     XAxis,
     YAxis,
     CartesianGrid,
@@ -28,7 +30,7 @@ interface MarketMetrics {
     oecdTrend: string;
     sentiment?: string;
     rawJson?: {
-        events?: { title: string, timeframe: string }[];
+        newsStats?: { counts: Record<string, number>, overallLabel: string };
         [key: string]: any;
     };
     createdAt: string;
@@ -151,18 +153,28 @@ export default function Dashboard() {
                                 <p className="text-zinc-200 text-lg leading-relaxed font-medium">"{metrics.sentiment}"</p>
                             </div>
                         </div>
-                        {metrics.rawJson?.events && metrics.rawJson.events.length > 0 && (
-                            <div className="mt-2 pt-4 border-t border-yellow-500/20 grid grid-cols-1 md:grid-cols-3 gap-4">
-                                {metrics.rawJson.events.map((ev: any, idx: number) => (
-                                    <div key={idx} className="bg-black/20 p-3 rounded-lg border border-yellow-500/10 flex items-start gap-3">
-                                        <div className="text-[10px] px-2 py-1 rounded bg-yellow-500/20 text-yellow-500 font-mono uppercase shrink-0">
-                                            {ev.timeframe || 'Event'}
-                                        </div>
-                                        <div className="text-sm text-zinc-300 font-medium">
-                                            {ev.title}
-                                        </div>
-                                    </div>
-                                ))}
+                        {metrics.rawJson?.newsStats && (
+                            <div className="mt-2 pt-4 border-t border-yellow-500/20">
+                                <h4 className="text-xs font-mono uppercase text-zinc-500 mb-2">AlphaVantage Global News Sentiment ({metrics.rawJson.newsStats.overallLabel})</h4>
+                                <div className="h-[120px] w-full max-w-lg">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart 
+                                            data={[
+                                                { name: 'Bearish', value: metrics.rawJson.newsStats.counts['Bearish'] || 0, fill: '#ef4444' },
+                                                { name: 'Sl. Bear', value: metrics.rawJson.newsStats.counts['Somewhat-Bearish'] || 0, fill: '#f87171' },
+                                                { name: 'Neutral', value: metrics.rawJson.newsStats.counts['Neutral'] || 0, fill: '#a1a1aa' },
+                                                { name: 'Sl. Bull', value: metrics.rawJson.newsStats.counts['Somewhat-Bullish'] || 0, fill: '#4ade80' },
+                                                { name: 'Bullish', value: metrics.rawJson.newsStats.counts['Bullish'] || 0, fill: '#22c55e' }
+                                            ]}
+                                            margin={{ top: 0, right: 0, left: -20, bottom: 0 }}
+                                        >
+                                            <XAxis dataKey="name" stroke="#52525b" tick={{ fill: '#71717a', fontSize: 10 }} tickLine={false} axisLine={false} />
+                                            <YAxis stroke="#52525b" tick={{ fill: '#71717a', fontSize: 10 }} tickLine={false} axisLine={false} />
+                                            <Tooltip cursor={{ fill: '#ffffff10' }} contentStyle={{ backgroundColor: '#18181b', border: '1px solid #3f3f46', fontSize: '10px' }} />
+                                            <Bar dataKey="value" radius={[2, 2, 0, 0]} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
                             </div>
                         )}
                     </div>
