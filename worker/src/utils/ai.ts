@@ -8,9 +8,27 @@ export async function generateMarketSentiment(data: MarketData, env: Env): Promi
         return "Market sentiment analysis currently unavailable.";
     }
 
+    let newsSummary = "No recent major news.";
+    if (env.AV_KEY) {
+        try {
+            const newsRes = await fetch(`https://www.alphavantage.co/query?function=NEWS_SENTIMENT&limit=5&apikey=${env.AV_KEY}`);
+            if (newsRes.ok) {
+                const newsData: any = await newsRes.json();
+                if (newsData.feed && Array.isArray(newsData.feed)) {
+                    newsSummary = newsData.feed
+                        .slice(0, 5)
+                        .map((f: any) => `- ${f.title}`)
+                        .join('\n');
+                }
+            }
+        } catch (e) {
+            console.error("Failed to fetch news", e);
+        }
+    }
+
     const prompt = `
-    Analyze the following market metrics and generate a concise, professional 1-sentence market sentiment summary (max 20 words).
-    Focus on risk level and trend.
+    Analyze the following market metrics and recent financial news, then generate a concise, professional 1-2 sentence market sentiment summary (max 30 words).
+    Focus on quantitative risk level and identify current macroeconomic or geopolitical narratives (e.g. wars, tech bubbles) if present.
     
     Metrics:
     - VIX: ${data.vix} (Score: ${data.vixScore})
@@ -19,7 +37,10 @@ export async function generateMarketSentiment(data: MarketData, env: Env): Promi
     - Market Mode: ${data.marketMode}
     - One Month Ahead Forecast: ${data.oneMonthAhead}
 
-    Example Output: "Volatility remains low with bullish liquidity support, suggesting continued stability in the near term."
+    Recent Top Financial News:
+    ${newsSummary}
+
+    Example Output: "Volatility remains low with bullish liquidity support, though geopolitical tensions in the Middle East suggest cautious optimism in the near term."
     `;
 
     try {
