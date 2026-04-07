@@ -170,7 +170,7 @@ export default function Dashboard() {
                     {METRIC_DEFINITIONS.map((def) => {
                         //@ts-ignore
                         const val = metrics ? Number(metrics[def.key]) : 0;
-                        const displayVal = metrics ? val.toFixed(2) : '-';
+                        const displayVal = metrics ? (def.id === 'oecd' ? val.toFixed(5) : val.toFixed(2)) : '-';
                         const isSelected = selectedMetrics.includes(def.id);
 
                         return (
@@ -221,7 +221,7 @@ export default function Dashboard() {
 
                         //@ts-ignore
                         const val = metrics ? Number(metrics[def.key]) : 0;
-                        const displayVal = metrics ? val.toFixed(2) : '-';
+                        const displayVal = metrics ? (def.id === 'oecd' ? val.toFixed(5) : val.toFixed(2)) : '-';
 
                         return (
                             <div
