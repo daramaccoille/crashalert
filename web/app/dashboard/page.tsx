@@ -166,7 +166,7 @@ export default function Dashboard() {
                             </div>
                         )}
                     </div>
-                )} )}
+                )}
 
                 <div className="mb-8 flex justify-between items-end">
                     <div>
