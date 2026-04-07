@@ -23,11 +23,22 @@ export async function generateMarketSentiment(data: MarketData, env: Env): Promi
                     const articles = newsData.feed;
                     let recentSummary = [];
                     for (let i = 0; i < articles.length; i++) {
-                        let label = articles[i].overall_sentiment_label;
-                        if ((newsStats.counts as any)[label] !== undefined) {
-                            (newsStats.counts as any)[label]++;
+                        let article = articles[i];
+                        
+                        if (article.ticker_sentiment && Array.isArray(article.ticker_sentiment)) {
+                            article.ticker_sentiment.forEach((ts: any) => {
+                                let label = ts.ticker_sentiment_label;
+                                // Handle potential underscores from older API outputs
+                                if (label === "Somewhat_Bullish") label = "Somewhat-Bullish";
+                                else if (label === "Somewhat_Bearish") label = "Somewhat-Bearish";
+                                
+                                if ((newsStats.counts as any)[label] !== undefined) {
+                                    (newsStats.counts as any)[label]++;
+                                }
+                            });
                         }
-                        if (i < 7) recentSummary.push(`- ${articles[i].title} (${label})`);
+
+                        if (i < 7) recentSummary.push(`- ${article.title} (${article.overall_sentiment_label || ''})`);
                     }
                     newsSummary = recentSummary.join("\n");
 
