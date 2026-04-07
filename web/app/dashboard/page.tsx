@@ -27,6 +27,10 @@ interface MarketMetrics {
     oecdMomentum: string;
     oecdTrend: string;
     sentiment?: string;
+    rawJson?: {
+        events?: { title: string, timeframe: string }[];
+        [key: string]: any;
+    };
     createdAt: string;
 }
 
@@ -135,20 +139,34 @@ export default function Dashboard() {
                 </div>
             </header>
 
-
-
             <main className="flex-1 max-w-7xl mx-auto w-full p-6">
 
                 {/* AI Sentiment Banner */}
                 {metrics?.sentiment && (
-                    <div className="mb-8 p-4 rounded-xl bg-gradient-to-r from-yellow-500/10 to-transparent border border-yellow-500/20 flex items-start gap-4">
-                        <div className="bg-yellow-500/20 p-2 rounded-lg text-yellow-500 text-xl">🤖</div>
-                        <div>
-                            <h3 className="text-sm font-bold text-yellow-500 uppercase tracking-wider mb-1">AI Market Analyst</h3>
-                            <p className="text-zinc-200 text-lg leading-relaxed font-medium">"{metrics.sentiment}"</p>
+                    <div className="mb-8 p-4 rounded-xl bg-gradient-to-r from-yellow-500/10 to-transparent border border-yellow-500/20 flex flex-col gap-4">
+                        <div className="flex items-start gap-4">
+                            <div className="bg-yellow-500/20 p-2 rounded-lg text-yellow-500 text-xl">🤖</div>
+                            <div>
+                                <h3 className="text-sm font-bold text-yellow-500 uppercase tracking-wider mb-1">AI Market Analyst</h3>
+                                <p className="text-zinc-200 text-lg leading-relaxed font-medium">"{metrics.sentiment}"</p>
+                            </div>
                         </div>
+                        {metrics.rawJson?.events && metrics.rawJson.events.length > 0 && (
+                            <div className="mt-2 pt-4 border-t border-yellow-500/20 grid grid-cols-1 md:grid-cols-3 gap-4">
+                                {metrics.rawJson.events.map((ev: any, idx: number) => (
+                                    <div key={idx} className="bg-black/20 p-3 rounded-lg border border-yellow-500/10 flex items-start gap-3">
+                                        <div className="text-[10px] px-2 py-1 rounded bg-yellow-500/20 text-yellow-500 font-mono uppercase shrink-0">
+                                            {ev.timeframe || 'Event'}
+                                        </div>
+                                        <div className="text-sm text-zinc-300 font-medium">
+                                            {ev.title}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
-                )}
+                )} )}
 
                 <div className="mb-8 flex justify-between items-end">
                     <div>

@@ -31,9 +31,10 @@ export default {
                 const data = await fetchMarketData(env, overrideData);
 
                 // 1. Generate Sentiment
-                const sentiment = await generateMarketSentiment(data, env);
-                console.log("DEBUG: Final Sentiment for Email:", sentiment);
-                data.sentiment = sentiment;
+                const aiResult = await generateMarketSentiment(data, env);
+                console.log("DEBUG: Final Sentiment for Email:", aiResult.sentiment);
+                data.sentiment = aiResult.sentiment;
+                (data as any).events = aiResult.events;
 
                 // 2. Save to DB
                 const db = getDb(env.DATABASE_URL);
@@ -49,7 +50,7 @@ export default {
 
                     oneMonthAhead: data.oneMonthAhead.toFixed(2),
                     marketMode: data.marketMode,
-                    sentiment: sentiment,
+                    sentiment: aiResult.sentiment,
                     oecdValue: data.oecdValue.toFixed(4),
                     oecdMomentum: data.oecdMomentum.toFixed(6),
                     oecdTrend: data.oecdTrend,
@@ -181,9 +182,10 @@ export default {
             console.log("Market Data Fetched:", JSON.stringify(data));
 
             // 0. AI Sentiment
-            const sentiment = await generateMarketSentiment(data, env);
-            console.log("DEBUG: Generated Sentiment:", sentiment);
-            data.sentiment = sentiment;
+            const aiResult = await generateMarketSentiment(data, env);
+            console.log("DEBUG: Generated Sentiment:", aiResult.sentiment);
+            data.sentiment = aiResult.sentiment;
+            (data as any).events = aiResult.events;
 
             // 1. Save to DB
             const db = getDb(env.DATABASE_URL);
@@ -199,7 +201,7 @@ export default {
 
                 oneMonthAhead: data.oneMonthAhead.toFixed(2),
                 marketMode: data.marketMode,
-                sentiment: sentiment,
+                sentiment: aiResult.sentiment,
 
                 // Scores
                 vixScore: data.vixScore,
