@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "pages:build": "next-on-pages",
-    "deploy": "wrangler pages deploy .vercel/output/static --project-name crashalert",
+    "deploy": "npm run pages:build && wrangler pages deploy .vercel/output/static --project-name crashalert",
     "test": "playwright test",
     "test:ui": "playwright test --ui"
   },
