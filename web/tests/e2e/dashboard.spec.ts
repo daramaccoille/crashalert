@@ -2,15 +2,10 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Dashboard Tests', () => {
   test.beforeEach(async ({ context }) => {
-    // Add the cookie expected by the middleware to allow entry
-    await context.addCookies([
-      {
-        name: 'crashalert-user',
-        value: 'mock-user',
-        domain: 'localhost',
-        path: '/',
-      }
-    ]);
+    // Inject header for middleware to allow generic bypassing locally
+    await context.setExtraHTTPHeaders({
+       'x-playwright-test': 'true'
+    });
   });
 
   test('Dashboard page loads correctly', async ({ page }) => {

@@ -2,44 +2,45 @@
 
 import { useState, Suspense } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 
 function LoginContent() {
     const searchParams = useSearchParams();
     const plan = searchParams.get('plan');
     const initialEmail = searchParams.get('email') || "";
 
+    const router = useRouter();
     const [email, setEmail] = useState(initialEmail);
     const [password, setPassword] = useState("");
+    const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setLoading(true);
 
         try {
-            const res = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
+            const res = await signIn("credentials", {
+                email,
+                password,
+                redirect: false
             });
-            const data = await res.json();
 
-            if (!res.ok) {
-                alert(data.error || "Login failed");
+            if (res?.error) {
+                alert(res.error || "Login failed");
+                setLoading(false);
                 return;
             }
 
             if (plan) {
-                // Upgrade/Downgrade/Cancel Purchase flow? Use API to get checkout link
-                // ... for now, assume login meant "I want to access my existing plan" or redirect to buy.
-                // If plan is in query param, maybe they want to buy it.
-                window.location.href = `/checkout?plan=${plan}`; // Simplified
+                router.push(`/checkout?plan=${plan}`);
             } else {
-                window.location.href = "/dashboard";
+                router.push("/dashboard");
             }
-
         } catch (err) {
             console.error("Login error", err);
             alert("Connection failed");
+            setLoading(false);
         }
     };
 
@@ -77,8 +78,8 @@ function LoginContent() {
                     />
                 </div>
 
-                <button type="submit" className="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-3.5 rounded-lg transition shadow-[0_0_15px_rgba(234,179,8,0.2)]">
-                    Sign In
+                <button type="submit" disabled={loading} className={`w-full bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-3.5 rounded-lg transition shadow-[0_0_15px_rgba(234,179,8,0.2)] ${loading ? 'opacity-50 cursor-wait' : ''}`}>
+                    {loading ? 'Signing in...' : 'Sign In'}
                 </button>
             </form>
 

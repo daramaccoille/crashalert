@@ -1,11 +1,10 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Metrics & Components Functionality', () => {
-  // Common setup for mocked data
   test.beforeEach(async ({ context, page }) => {
-    await context.addCookies([
-      { name: 'crashalert-user', value: 'mock-user', domain: 'localhost', path: '/' }
-    ]);
+    await context.setExtraHTTPHeaders({
+       'x-playwright-test': 'true'
+    });
 
     await page.route('/api/metrics', async route => {
       await route.fulfill({

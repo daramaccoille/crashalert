@@ -5,12 +5,15 @@ import { db } from "@/lib/db";
 import { subscribers } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
 
+import { authConfig } from "./auth.config";
+
 export const {
   handlers: { GET, POST },
   auth,
   signIn,
   signOut,
 } = NextAuth({
+  ...authConfig,
   session: { strategy: "jwt" },
   providers: [
     CredentialsProvider({

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import {
     LineChart,
     Line,
@@ -48,6 +49,7 @@ const METRIC_DEFINITIONS = [
 ];
 
 export default function Dashboard() {
+    const { data: session, status } = useSession();
     const [metrics, setMetrics] = useState<MarketMetrics | null>(null);
     const [history, setHistory] = useState<MarketMetrics[]>([]);
     const [loading, setLoading] = useState(true);
@@ -108,7 +110,7 @@ export default function Dashboard() {
         return isRisk ? 'text-red-500' : 'text-green-500';
     };
 
-    if (loading) return <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center">Loading Market Data...</div>;
+    if (loading || status === "loading") return <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center">Loading Market Data...</div>;
 
     return (
         <div className="min-h-screen bg-[#050505] text-white flex flex-col">
@@ -126,7 +128,13 @@ export default function Dashboard() {
                         CRASHALERT<span className="text-yellow-500">.</span> <span className="text-sm font-normal text-zinc-500 ml-2">Dashboard</span>
                     </div>
                     <div className="flex items-center gap-4">
-                        <span className="text-sm text-zinc-400">Welcome, <strong>Expert User</strong></span>
+                        <span className="text-sm text-zinc-400">Welcome, <strong className="text-white">{session?.user?.name || session?.user?.email || 'Expert User'}</strong></span>
+                        {/* Optionally display plan */}
+                        {session?.user && (session.user as any).plan && (
+                            <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-500">
+                                {(session.user as any).plan}
+                            </span>
+                        )}
                         <button
                             disabled={portalLoading}
                             onClick={() => {
