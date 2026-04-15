@@ -25,6 +25,9 @@ export async function sendEmail(
     };
 
     try {
+        console.log(`Attempting to send email to ${to} using Brevo...`);
+        console.log(`API Key preview: ${apiKey.substring(0, 5)}...${apiKey.substring(apiKey.length - 5)} (Length: ${apiKey.length})`);
+
         const response = await fetch(url, {
             method: 'POST',
             headers: {
@@ -37,11 +40,13 @@ export async function sendEmail(
 
         if (!response.ok) {
             const errorText = await response.text();
-            console.error(`Brevo Email Failed to ${to}: ${response.status} - ${errorText}`);
+            console.error(`Brevo Email API Error for ${to}: Status ${response.status}`);
+            console.error(`Response Body: ${errorText}`);
             return { success: false, error: `${response.status} - ${errorText}` };
         }
 
-        console.log(`Email sent successfully to ${to}`);
+        const data = await response.json();
+        console.log(`Brevo Email Success for ${to}. MessageID: ${JSON.stringify(data)}`);
         return { success: true };
     } catch (error: any) {
         console.error("Error sending email via Brevo:", error);

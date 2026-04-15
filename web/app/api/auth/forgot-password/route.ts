@@ -10,14 +10,18 @@ export const runtime = 'edge';
 export async function POST(req: NextRequest) {
     try {
         const { email } = await req.json();
+        console.log(`[Forgot Password] Request received for: ${email}`);
 
         if (!email) {
+            console.warn("[Forgot Password] Email missing in request");
             return NextResponse.json({ error: "Email is required" }, { status: 400 });
         }
 
         const user = await db.query.subscribers.findFirst({
             where: eq(subscribers.email, email)
         });
+
+        console.log(`[Forgot Password] User search result: ${user ? "Found" : "Not Found"}`);
 
         // Always return success even if user not found to prevent email enumeration
         if (!user) {
@@ -40,7 +44,8 @@ export async function POST(req: NextRequest) {
             <p><small>If you did not request this, you can safely ignore this email.</small></p>
         `;
 
-        await sendEmail(email, "Reset your CrashAlert Password", html);
+        const emailResult = await sendEmail(email, "Reset your CrashAlert Password", html);
+        console.log(`[Forgot Password] SendEmail result:`, emailResult);
 
         return NextResponse.json({ success: true, message: "If an account exists, a reset link was sent." });
 

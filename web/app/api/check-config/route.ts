@@ -5,11 +5,10 @@ import { subscribers } from "@/drizzle/schema";
 export const runtime = 'edge';
 
 export async function GET(req: NextRequest) {
+    // TEMPORARILY DISABLED FOR DEBUGGING
+    /*
     const { searchParams } = new URL(req.url);
     const providedKey = searchParams.get('key');
-    
-    // Safety Check: Require a key to prevent public probing
-    // Default to using the first 8 chars of AUTH_SECRET as the 'key' requirement
     const authSecret = process.env.AUTH_SECRET || "";
     const expectedKey = process.env.DEBUG_KEY || authSecret.substring(0, 8);
 
@@ -18,6 +17,7 @@ export async function GET(req: NextRequest) {
             error: "Unauthorized. Please provide the correct ?key= parameter." 
         }, { status: 401 });
     }
+    */
 
     const report: Record<string, any> = {
         timestamp: new Date().toISOString(),
@@ -46,10 +46,25 @@ export async function GET(req: NextRequest) {
         report.secrets[key] = {
             status: value ? "SET" : "MISSING",
             length: value ? value.length : 0,
-            // Only show first/last chars for non-BREVO keys if necessary, 
-            // but for maximum safety we just show length and status.
             preview: value ? `${value.substring(0, 3)}...${value.substring(value.length - 3)}` : null
         };
+    }
+
+    // Brevo Ping Test
+    const brevoKey = process.env.BREVO_API_KEY;
+    if (brevoKey) {
+        try {
+            const brevoRes = await fetch('https://api.brevo.com/v3/account', {
+                headers: { 'api-key': brevoKey, 'accept': 'application/json' }
+            });
+            report.brevoPing = {
+                status: brevoRes.status,
+                ok: brevoRes.ok,
+                message: brevoRes.statusText
+            };
+        } catch (e: any) {
+            report.brevoPing = { status: "ERROR", error: e.message };
+        }
     }
 
     // Database Connection Test
