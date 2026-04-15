@@ -4,14 +4,14 @@
 # .\scripts\sync-secrets.ps1 -Type worker -File .\worker\.dev.vars -Project crashalertworker
 
 param (
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory = $true)]
     [ValidateSet("pages", "worker")]
     $Type,
 
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory = $true)]
     $File,
 
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory = $true)]
     $Project
 )
 
@@ -21,7 +21,6 @@ if (-not (Test-Path $File)) {
 }
 
 Write-Host "Reading ${File} and syncing to Cloudflare (${Type}: ${Project})..." -ForegroundColor Cyan
-
 # Read file, ignoring comments and empty lines
 Get-Content $File | Where-Object { $_ -match '=' -and $_ -notmatch '^#' } | ForEach-Object {
     $parts = $_.Split('=', 2)
@@ -34,7 +33,8 @@ Get-Content $File | Where-Object { $_ -match '=' -and $_ -notmatch '^#' } | ForE
         if ($Type -eq "pages") {
             # Pages requires setting variables via project config
             npx wrangler pages project config vars set "$key=$value" --project-name $Project
-        } else {
+        }
+        else {
             # Workers use secret put (interactive by default, using echo to pipe)
             $value | npx wrangler secret put $key --name $Project
         }
