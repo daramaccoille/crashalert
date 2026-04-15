@@ -31,11 +31,11 @@ Get-Content $File | Where-Object { $_ -match '=' -and $_ -notmatch '^#' } | ForE
         Write-Host "Syncing $key..." -ForegroundColor Yellow
         
         if ($Type -eq "pages") {
-            # Pages requires setting variables via project config
-            npx wrangler pages project config vars set "$key=$value" --project-name $Project
+            # Pages uses 'secret put' for sensitive variables
+            $value | npx wrangler pages secret put $key --project-name $Project
         }
         else {
-            # Workers use secret put (interactive by default, using echo to pipe)
+            # Workers use 'secret put' (interactive by default, using echo to pipe)
             $value | npx wrangler secret put $key --name $Project
         }
     }
