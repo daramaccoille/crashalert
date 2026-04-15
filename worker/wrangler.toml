@@ -3,14 +3,8 @@ main = "src/index.ts"
 compatibility_date = "2024-01-01"
 
 [vars]
-# Environment variables for the worker
-# STRIPE_KEY = "..."
-# RESEND_KEY = "..."
-# GEMINI_KEY = "..."
-# DATABASE_URL = "..."
-# FRED_KEY = "..."
-# AV_KEY = "..."
-# NEXT_PUBLIC_URL="https://crashalert.online"
+# Non-sensitive configuration variables
+NEXT_PUBLIC_URL = "https://crashalert.online"
 
 [triggers]
 crons = ["0 7 * * 1-5"] # Run at 7 AM UTC (Market Open approx) Mon-Fri
