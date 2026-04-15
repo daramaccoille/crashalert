@@ -51,6 +51,7 @@ export default function Dashboard() {
     const [metrics, setMetrics] = useState<MarketMetrics | null>(null);
     const [history, setHistory] = useState<MarketMetrics[]>([]);
     const [loading, setLoading] = useState(true);
+    const [portalLoading, setPortalLoading] = useState(false);
     const [selectedMetrics, setSelectedMetrics] = useState<string[]>(["vix", "yield"]);
 
     useEffect(() => {
@@ -127,15 +128,17 @@ export default function Dashboard() {
                     <div className="flex items-center gap-4">
                         <span className="text-sm text-zinc-400">Welcome, <strong>Expert User</strong></span>
                         <button
+                            disabled={portalLoading}
                             onClick={() => {
+                                setPortalLoading(true);
                                 fetch('/api/portal', { method: 'POST' })
                                     .then(res => res.json())
-                                    .then(data => { if (data.url) window.location.href = data.url; })
-                                    .catch(err => alert("Failed to load portal"));
+                                    .then(data => { if (data.url) window.location.href = data.url; else setPortalLoading(false); })
+                                    .catch(err => { alert("Failed to load portal"); setPortalLoading(false); });
                             }}
-                            className="text-xs border border-white/10 px-3 py-1.5 rounded hover:bg-white/5 transition mr-2"
+                            className={`text-xs border border-white/10 px-3 py-1.5 rounded hover:bg-white/5 transition mr-2 cursor-pointer ${portalLoading ? 'opacity-50 cursor-wait' : ''}`}
                         >
-                            Manage Subscription
+                            {portalLoading ? 'Redirecting...' : 'Manage Subscription'}
                         </button>
                         <Link href="/" className="text-xs text-zinc-500 hover:text-white transition">Sign Out</Link>
                     </div>
