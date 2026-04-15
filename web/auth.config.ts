@@ -22,4 +22,5 @@ export const authConfig = {
     },
   },
   providers: [],
+  secret: process.env.AUTH_SECRET || process.env.STRIPE_SECRET_KEY,
 } satisfies NextAuthConfig;

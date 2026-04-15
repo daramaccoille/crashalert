@@ -14,6 +14,7 @@ export const {
   signOut,
 } = NextAuth({
   ...authConfig,
+  trustHost: true,
   session: { strategy: "jwt" },
   providers: [
     CredentialsProvider({
@@ -68,7 +69,6 @@ export const {
         return session;
     }
   },
-  secret: process.env.AUTH_SECRET || process.env.STRIPE_SECRET_KEY,
   pages: {
     signIn: '/login',
   }
