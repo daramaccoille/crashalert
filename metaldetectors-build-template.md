@@ -209,12 +209,12 @@ Use: "Target is...", "Trend confirms...", "Expect bounce at...".
 
 ## Phase 2: Live Data & Domain Integration (Next Steps)
 
-### 1. Domain Configuration (`metaldetectors.info`)
+### 1. Domain Configuration (`metaldetectors.online`)
 - **Cloudflare**: Add site to Cloudflare Dashboard. Update nameservers at Ionos to point to Cloudflare.
 - **Resend**: 
-  - Add domain `metaldetectors.info` to Resend.
+  - Add domain `metaldetectors.online` to Resend.
   - Add generated DNS records (DKIM, SPF, DMARC) to Cloudflare DNS settings.
-  - Update `worker/src/utils/email.ts` to send *from* `signals@metaldetectors.info` instead of `onboarding@resend.dev`.
+  - Update `worker/src/utils/email.ts` to send *from* `noreply@metaldetectors.online` instead of `onboarding@resend.dev`.
 
 ### 2. Stripe Webhook (Critical for Activation)
 - **Problem**: Current implementation adds users as `active: false` or "Pending". We need to flip them to `active: true` only when payment succeeds.
